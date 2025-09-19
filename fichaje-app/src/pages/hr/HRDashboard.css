@@ -1,0 +1,86 @@
+.hr-dashboard {
+    padding: 20px;
+    font-family: 'Sen', sans-serif;
+}
+
+.hr-dashboard h1 {
+    /* Using the themed header style from the global App.css */
+    background-color: #04003B;
+    color: #ffffff;
+    padding: 20px;
+    margin: -20px -20px 30px -20px; /* Expand to container edges */
+    border-radius: 8px;
+}
+
+.dashboard-section {
+    margin-bottom: 40px;
+}
+
+.dashboard-section h2 {
+    font-size: 1.5em;
+    color: #343a40;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f2f5;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.recent-activity-widget {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 10px;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.activity-action {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9em;
+    min-width: 60px;
+    text-align: center;
+}
+
+.action-entrada { background-color: #28a745; }
+.action-salida { background-color: #dc3545; }
+.action-pausa { background-color: #ffc107; color: #333; }
+
+.activity-time {
+    color: #6c757d;
+    font-size: 0.9em;
+}

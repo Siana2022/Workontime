@@ -1,0 +1,103 @@
+.pin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.pin-modal-content {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2em;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.modal-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 4px solid #f0f2f5;
+}
+
+.pin-modal-content h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.8em;
+}
+
+.pin-modal-content p {
+    margin: 0 0 20px 0;
+    color: #666;
+}
+
+.pin-input {
+    width: 80%;
+    padding: 15px;
+    font-size: 2em;
+    text-align: center;
+    letter-spacing: 0.5em;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Re-using action-btn styles from EmployeeDashboard.css */
+.modal-actions .action-btn {
+    font-size: 1.2em;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.2s;
+    min-width: 120px;
+}
+
+.modal-actions .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-actions .action-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.clock-in { background-color: #28a745; }
+.pause { background-color: #ffc107; color: #333; }
+.clock-out { background-color: #dc3545; }
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    min-height: 20px;
+}

@@ -1,0 +1,107 @@
+.hr-reports-container {
+    padding: 20px;
+    font-family: 'Sen', sans-serif;
+}
+
+.hr-reports-container h1 {
+    background-color: #04003B;
+    color: #ffffff;
+    padding: 20px;
+    margin: -20px -20px 30px -20px;
+    border-radius: 8px;
+}
+
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.apply-filters-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #04003B;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: fit-content; /* Align button nicely with inputs */
+}
+
+.apply-filters-btn:hover {
+    background-color: #1c2a5e;
+}
+
+.apply-filters-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.report-section {
+    margin-top: 40px;
+}
+
+.report-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.report-table th,
+.report-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.report-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.report-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+}

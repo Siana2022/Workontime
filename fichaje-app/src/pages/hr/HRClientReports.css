@@ -1,0 +1,96 @@
+.hr-client-reports-container {
+    padding: 20px;
+    font-family: 'Sen', sans-serif;
+}
+
+.hr-client-reports-container h1 {
+    background-color: #04003B;
+    color: #ffffff;
+    padding: 20px;
+    margin: -20px -20px 30px -20px;
+    border-radius: 8px;
+}
+
+/* Note: In a larger app, these shared styles for filters and tables
+   would be in a global CSS file to avoid duplication. */
+
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    min-width: 250px;
+}
+
+.report-section {
+    margin-top: 40px;
+}
+
+.report-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.report-table th,
+.report-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.report-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.report-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.client-summary-total {
+    background-color: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.client-summary-total span {
+    color: #04003B;
+    font-size: 1.5em;
+    margin-left: 10px;
+}

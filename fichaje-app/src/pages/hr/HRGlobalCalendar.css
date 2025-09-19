@@ -1,0 +1,91 @@
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.calendar-header h2 {
+    margin: 0;
+}
+
+.calendar-header button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.calendar-container {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.days-header {
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+.days-header .day-header {
+    padding: 10px 5px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.calendar-day {
+    min-height: 120px;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+    position: relative;
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.day-number {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.calendar-day.other-month .day-number {
+    color: #ccc;
+}
+
+.events-container {
+    margin-top: 5px;
+}
+
+.event {
+    font-size: 0.8em;
+    padding: 2px 4px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white;
+}
+
+.event-aprobada {
+    background-color: #28a745; /* Green */
+}
+
+.event-pendiente {
+    background-color: #ffc107; /* Yellow */
+    color: #333;
+}
+
+.event-holiday {
+    background-color: #6f42c1; /* Purple */
+    cursor: pointer;
+}

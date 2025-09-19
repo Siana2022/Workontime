@@ -1,0 +1,49 @@
+.incidents-container {
+    padding: 20px;
+}
+
+.incidents-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.add-incident-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.add-incident-btn:hover {
+    background-color: #0056b3;
+}
+
+.incidents-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.incidents-table th, .incidents-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.incidents-table th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+.incidents-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.incidents-table tbody tr:hover {
+    background-color: #e8e8e8;
+}

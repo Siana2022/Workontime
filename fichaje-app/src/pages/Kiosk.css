@@ -1,0 +1,75 @@
+/* Using a more full-screen friendly container for the kiosk */
+.kiosk-container {
+    padding: 30px;
+    text-align: center;
+    background-color: #f0f2f5; /* A light grey background */
+    min-height: 100vh;
+    box-sizing: border-box;
+    font-family: 'Sen', sans-serif;
+}
+
+.kiosk-container h1 {
+    color: #04003B; /* Dark blue text to match theme */
+    margin-bottom: 10px;
+    font-size: 2.5em;
+}
+
+.current-time-kiosk {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.kiosk-confirmation {
+    background-color: #d4edda; /* Light green for success */
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 0 auto 20px auto;
+    max-width: 800px;
+    font-size: 1.2em;
+    transition: opacity 0.5s;
+}
+
+.employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.employee-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column; /* Arrange avatar and name vertically */
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.employee-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.employee-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f2f5;
+}
+
+.employee-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
