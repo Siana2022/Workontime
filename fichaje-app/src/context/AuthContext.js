@@ -67,11 +67,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const login = async (name, pin) => {
+        // The login form uses "name", but Supabase auth needs an email.
+        // We'll assume the user enters their email in the "name" field.
+        const { error } = await supabase.auth.signInWithPassword({
+            email: name,
+            password: pin,
+        });
+
+        if (error) {
+            console.error('Error logging in:', error.message);
+            return false; // Indicate failure
+        }
+        // onAuthStateChange will trigger automatically, fetching user data.
+        return true; // Indicate success
+    };
+
     const value = {
         session,
         user, // The employee record
         companyId,
         settings,
+        login,
         signOut: () => supabase.auth.signOut(),
         loading, // Expose loading state
     };

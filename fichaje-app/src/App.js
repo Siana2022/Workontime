@@ -82,7 +82,7 @@ const AppRoutes = () => {
                         <Route path="holidays" element={<HRHolidays />} />
                         <Route path="schedule-types" element={<HRScheduleTypes />} />
                         <Route path="clients" element={<HRClients />} />
-                        <Route path="reports" an d element={<HRReports />} />
+                        <Route path="reports" element={<HRReports />} />
                         <Route path="client-reports" element={<HRClientReports />} />
                         <Route path="requests-admin" element={<HRRequestsAdmin />} />
                         <Route path="annual-balances" element={<HRAnnualBalances />} />

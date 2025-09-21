@@ -4,13 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import './HRPanel.css';
 import './HREmployees.css';
 
-const EmployeeForm = ({ employee, schedules, clients, assignedClientIds, onSave, onCancel, isSaving, settings }) => {
+const EmployeeForm = ({ employee, schedules, departments, clients, assignedClientIds, onSave, onCancel, isSaving, settings }) => {
     const [formData, setFormData] = useState(employee || {});
     const [avatarFile, setAvatarFile] = useState(null);
     const [selectedClients, setSelectedClients] = useState(new Set(assignedClientIds || []));
 
     useEffect(() => {
-        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', avatar_url: '', schedule_id: null, vacation_days: 22 };
+        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', avatar_url: '', schedule_id: null, department_id: null, vacation_days: 22 };
         setFormData(initialData);
         setSelectedClients(new Set(assignedClientIds || []));
     }, [employee, assignedClientIds]);
@@ -68,6 +68,13 @@ const EmployeeForm = ({ employee, schedules, clients, assignedClientIds, onSave,
                     </select>
                 </div>
                 <div className="form-group">
+                    <label htmlFor="employee-department">Departamento</label>
+                    <select id="employee-department" name="department_id" value={formData.department_id || ''} onChange={handleChange} disabled={isSaving}>
+                        <option value="">Sin Departamento</option>
+                        {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    </select>
+                </div>
+                <div className="form-group">
                     <label htmlFor="employee-vacation">Días de Vacaciones Totales</label>
                     <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} required disabled={isSaving} />
                 </div>
@@ -110,6 +117,7 @@ const HREmployees = () => {
     const { companyId, settings } = useAuth();
     const [employees, setEmployees] = useState([]);
     const [schedules, setSchedules] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [clients, setClients] = useState([]);
     const [assignments, setAssignments] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -125,17 +133,19 @@ const HREmployees = () => {
             const [
                 { data: employeesData, error: employeesError },
                 { data: schedulesData, error: schedulesError },
+                { data: departmentsData, error: departmentsError },
                 { data: clientsData, error: clientsError },
                 { data: assignmentsData, error: assignmentsError }
             ] = await Promise.all([
-                supabase.from('employees').select('*, schedule:schedules(name)').eq('company_id', companyId).order('full_name', { ascending: true }),
+                supabase.from('employees').select('*, schedule:schedules(name), department:departments(name)').eq('company_id', companyId).order('full_name', { ascending: true }),
                 supabase.from('schedules').select('*').eq('company_id', companyId).order('name', { ascending: true }),
+                supabase.from('departments').select('*').eq('company_id', companyId).order('name', { ascending: true }),
                 supabase.from('clients').select('*').eq('company_id', companyId).order('name', { ascending: true }),
                 supabase.from('employee_client_assignments').select('*').eq('company_id', companyId)
             ]);
 
-            if (employeesError || schedulesError || clientsError || assignmentsError) {
-                throw employeesError || schedulesError || clientsError || assignmentsError;
+            if (employeesError || schedulesError || departmentsError || clientsError || assignmentsError) {
+                throw employeesError || schedulesError || departmentsError || clientsError || assignmentsError;
             }
 
             const filteredEmployees = employeesData.filter(emp => emp.role !== 'Super Admin');
@@ -150,6 +160,7 @@ const HREmployees = () => {
 
             setEmployees(employeesWithAssignments);
             setSchedules(schedulesData);
+            setDepartments(departmentsData);
             setClients(clientsData);
             setAssignments(assignmentsData);
         } catch (err) {
@@ -203,6 +214,7 @@ const HREmployees = () => {
                 ...formData,
                 avatar_url: avatarUrl,
                 schedule_id: formData.schedule_id || null,
+                department_id: formData.department_id || null,
                 vacation_days: parseInt(formData.vacation_days, 10)
             };
 
@@ -257,7 +269,7 @@ const HREmployees = () => {
 
     return (
         <div className="hr-panel-container">
-            {isFormVisible && <EmployeeForm employee={editingEmployee} schedules={schedules} clients={clients} assignedClientIds={assignedClientIds} onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} settings={settings} />}
+            {isFormVisible && <EmployeeForm employee={editingEmployee} schedules={schedules} departments={departments} clients={clients} assignedClientIds={assignedClientIds} onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} settings={settings} />}
             <div className="hr-panel-header">
                 <h1>Gestión de Empleados</h1>
                 <button onClick={handleAdd} className="hr-panel-add-btn">+ Añadir Empleado</button>
@@ -274,6 +286,7 @@ const HREmployees = () => {
                                 <th>Avatar</th>
                                 <th>Nombre</th>
                                 <th>Rol</th>
+                                <th>Departamento</th>
                                 <th>Horario</th>
                                 {settings?.has_clients_module && <th>Clientes Asignados</th>}
                                 <th>Acciones</th>
@@ -285,6 +298,7 @@ const HREmployees = () => {
                                     <td><img src={employee.avatar_url || `https://i.pravatar.cc/150?u=${employee.id}`} alt={employee.full_name} className="employee-table-avatar" /></td>
                                     <td>{employee.full_name}</td>
                                     <td>{employee.role}</td>
+                                    <td>{employee.department?.name || 'Sin asignar'}</td>
                                     <td>{employee.schedule?.name || 'Sin asignar'}</td>
                                     {settings?.has_clients_module && <td>{employee.assigned_clients.join(', ')}</td>}
                                     <td>

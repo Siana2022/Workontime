@@ -6,10 +6,12 @@ import './HRReports.css';
 const HRReports = () => {
     const { companyId } = useAuth();
     const [employees, setEmployees] = useState([]);
+    const [departments, setDepartments] = useState([]);
     const [timeEntries, setTimeEntries] = useState([]);
     const [summaryData, setSummaryData] = useState([]);
     const [filters, setFilters] = useState({
         employeeId: '',
+        departmentId: '',
         startDate: '',
         endDate: '',
     });
@@ -18,17 +20,22 @@ const HRReports = () => {
 
     useEffect(() => {
         if (!companyId) return;
-        const fetchEmployees = async () => {
-            const { data, error } = await supabase
-                .from('employees')
-                .select('id, full_name')
-                .eq('company_id', companyId)
-                .neq('role', 'Super Admin')
-                .order('full_name');
-            if (error) setError('No se pudo cargar la lista de empleados.');
-            else setEmployees(data);
+        const fetchData = async () => {
+            const [
+                { data: employeesData, error: employeesError },
+                { data: departmentsData, error: departmentsError }
+            ] = await Promise.all([
+                supabase.from('employees').select('id, full_name').eq('company_id', companyId).neq('role', 'Super Admin').order('full_name'),
+                supabase.from('departments').select('id, name').eq('company_id', companyId).order('name')
+            ]);
+
+            if (employeesError) setError('No se pudo cargar la lista de empleados.');
+            else setEmployees(employeesData);
+
+            if (departmentsError) setError('No se pudo cargar la lista de departamentos.');
+            else setDepartments(departmentsData);
         };
-        fetchEmployees();
+        fetchData();
     }, [companyId]);
 
     const handleFilterChange = (e) => {
@@ -113,21 +120,63 @@ const HRReports = () => {
         setTimeEntries([]);
         setSummaryData([]);
 
-        let query = supabase.from('time_entries').select('*').eq('company_id', companyId).order('created_at', { ascending: true });
+        try {
+            let employeeIdsToFilter = null;
 
-        if (filters.employeeId) query = query.eq('employee_id', filters.employeeId);
-        if (filters.startDate) query = query.gte('created_at', `${filters.startDate}T00:00:00`);
-        if (filters.endDate) query = query.lte('created_at', `${filters.endDate}T23:59:59`);
+            // If a department is selected, get the employees from that department
+            if (filters.departmentId) {
+                const { data: departmentEmployees, error: deptError } = await supabase
+                    .from('employees')
+                    .select('id')
+                    .eq('company_id', companyId)
+                    .eq('department_id', filters.departmentId);
 
-        const { data, error: fetchError } = await query;
+                if (deptError) throw new Error('No se pudieron cargar los empleados del departamento.');
 
-        if (fetchError) {
-            setError('No se pudieron cargar los fichajes.');
-        } else {
+                const ids = departmentEmployees.map(emp => emp.id);
+                if (ids.length === 0) {
+                    // No employees in this department, so no time entries to show
+                    setTimeEntries([]);
+                    setSummaryData([]);
+                    setLoading(false);
+                    return;
+                }
+                employeeIdsToFilter = ids;
+            }
+
+            let query = supabase.from('time_entries').select('*').eq('company_id', companyId).order('created_at', { ascending: true });
+
+            // Handle combined employee and department filters
+            if (filters.employeeId) {
+                if (employeeIdsToFilter && !employeeIdsToFilter.includes(filters.employeeId)) {
+                     // Employee is not in the selected department, so return empty
+                    setTimeEntries([]);
+                    setSummaryData([]);
+                    setLoading(false);
+                    return;
+                }
+                query = query.eq('employee_id', filters.employeeId);
+            } else if (employeeIdsToFilter) {
+                query = query.in('employee_id', employeeIdsToFilter);
+            }
+
+            if (filters.startDate) query = query.gte('created_at', `${filters.startDate}T00:00:00`);
+            if (filters.endDate) query = query.lte('created_at', `${filters.endDate}T23:59:59`);
+
+            const { data, error: fetchError } = await query;
+
+            if (fetchError) {
+                throw new Error('No se pudieron cargar los fichajes.');
+            }
+
             setTimeEntries(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
             setSummaryData(calculateHoursSummary(data));
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
@@ -139,6 +188,13 @@ const HRReports = () => {
                     <select id="employeeId" name="employeeId" value={filters.employeeId} onChange={handleFilterChange}>
                         <option value="">Todos</option>
                         {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.full_name}</option>)}
+                    </select>
+                </div>
+                <div className="filter-group">
+                    <label htmlFor="departmentId">Departamento</label>
+                    <select id="departmentId" name="departmentId" value={filters.departmentId} onChange={handleFilterChange}>
+                        <option value="">Todos</option>
+                        {departments.map(dep => <option key={dep.id} value={dep.id}>{dep.name}</option>)}
                     </select>
                 </div>
                 <div className="filter-group">
