@@ -46,21 +46,39 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async (authUser) => {
         try {
-            const { data: employeeData, error } = await supabase
+            // Step 1: Fetch the core employee data
+            const { data: employeeData, error: employeeError } = await supabase
                 .from('employees')
-                .select('*, companies(*)')
+                .select('*')
                 .eq('id', authUser.id)
                 .single();
 
-            if (error) throw error;
+            if (employeeError) throw employeeError;
 
             if (employeeData) {
                 setUser(employeeData);
                 setCompanyId(employeeData.company_id);
-                setSettings(employeeData.companies || {});
+
+                // Step 2: Fetch the company data separately for settings
+                if (employeeData.company_id) {
+                    const { data: companyData, error: companyError } = await supabase
+                        .from('companies')
+                        .select('*')
+                        .eq('id', employeeData.company_id)
+                        .single();
+
+                    if (companyError) {
+                        console.error('Could not fetch company settings:', companyError);
+                        setSettings({}); // Default to empty settings if company fetch fails
+                    } else {
+                        setSettings(companyData || {});
+                    }
+                } else {
+                    setSettings({}); // No company associated
+                }
             }
         } catch (error) {
-            console.error('Error fetching user data:', error);
+            console.error('Error fetching user data:', error.message);
             setUser(null);
             setCompanyId(null);
             setSettings({});
