@@ -8,112 +8,88 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [session, setSession] = useState(null);
-    const [user, setUser] = useState(null); // This will be the full employee record
+    const [user, setUser] = useState(null);
     const [companyId, setCompanyId] = useState(null);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSessionAndUserData = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            if (session?.user) {
-                await fetchUserData(session.user);
-            }
-            setLoading(false);
-        };
-
-        fetchSessionAndUserData();
-
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                setSession(session);
-                if (session?.user) {
-                    await fetchUserData(session.user);
-                } else {
-                    setUser(null);
-                    setCompanyId(null);
-                    setSettings({});
-                }
-            }
-        );
-
-        return () => {
-            authListener.subscription.unsubscribe();
-        };
-    }, []);
-
-    const fetchUserData = async (authUser) => {
+        // On initial load, check localStorage for a saved user session
         try {
-            // Step 1: Fetch the core employee data
-            const { data: employeeData, error: employeeError } = await supabase
-                .from('employees')
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
-
-            if (employeeError) throw employeeError;
-
-            if (employeeData) {
-                setUser(employeeData);
-                setCompanyId(employeeData.company_id);
-
-                // Step 2: Fetch the company data separately for settings
-                if (employeeData.company_id) {
-                    const { data: companyData, error: companyError } = await supabase
-                        .from('companies')
-                        .select('*')
-                        .eq('id', employeeData.company_id)
-                        .single();
-
-                    if (companyError) {
-                        console.error('Could not fetch company settings:', companyError);
-                        setSettings({}); // Default to empty settings if company fetch fails
-                    } else {
-                        setSettings(companyData || {});
-                    }
-                } else {
-                    setSettings({}); // No company associated
+            const savedUser = localStorage.getItem('workontime_user');
+            if (savedUser) {
+                const parsedUser = JSON.parse(savedUser);
+                // We need to fetch fresh company settings, but we can set the user immediately
+                setUser(parsedUser);
+                setCompanyId(parsedUser.company_id);
+                if (parsedUser.companies) {
+                    setSettings(parsedUser.companies);
                 }
             }
         } catch (error) {
-            console.error('Error fetching user data:', error.message);
-            setUser(null);
-            setCompanyId(null);
-            setSettings({});
+            console.error("Failed to parse user from localStorage", error);
+            localStorage.removeItem('workontime_user');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const login = async (fullName, pin) => {
+        setLoading(true);
+        try {
+            const { data: employee, error } = await supabase
+                .from('employees')
+                .select('*, companies(*)') // Fetch employee and their related company data
+                .eq('full_name', fullName)
+                .single();
+
+            if (error || !employee) {
+                console.error('Login failed: User not found or name does not match exactly.', error?.message);
+                return false;
+            }
+
+            // Manual PIN check (as per the custom auth flow)
+            if (employee.pin != pin) {
+                console.error('Login failed: Invalid PIN for user -', fullName);
+                return false;
+            }
+
+            // If credentials are correct, set user state and save to localStorage
+            setUser(employee);
+            setCompanyId(employee.company_id);
+            setSettings(employee.companies || {});
+            localStorage.setItem('workontime_user', JSON.stringify(employee));
+
+            return true;
+
+        } catch (error) {
+            console.error('An unexpected error occurred during login:', error.message);
+            return false;
+        } finally {
+            setLoading(false);
         }
     };
 
-    const login = async (name, pin) => {
-        // The login form uses "name", but Supabase auth needs an email.
-        // We'll assume the user enters their email in the "name" field.
-        const { error } = await supabase.auth.signInWithPassword({
-            email: name,
-            password: pin,
-        });
-
-        if (error) {
-            console.error('Error logging in:', error.message);
-            return false; // Indicate failure
-        }
-        // onAuthStateChange will trigger automatically, fetching user data.
-        return true; // Indicate success
+    const logout = () => {
+        setUser(null);
+        setCompanyId(null);
+        setSettings({});
+        localStorage.removeItem('workontime_user');
     };
 
     const value = {
-        session,
-        user, // The employee record
+        // No longer providing Supabase 'session'
+        user,
         companyId,
         settings,
         login,
-        signOut: () => supabase.auth.signOut(),
-        loading, // Expose loading state
+        logout,
+        loading,
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
