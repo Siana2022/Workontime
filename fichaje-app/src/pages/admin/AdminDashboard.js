@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                 .order('name', { ascending: true });
 
             if (error) throw error;
-            setCompanies(data);
+                setCompanies(data || []);
         } catch (err) {
             setError('No se pudieron cargar las empresas.');
             console.error(err);
