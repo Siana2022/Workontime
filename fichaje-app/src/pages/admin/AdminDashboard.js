@@ -19,7 +19,7 @@ const CompanyForm = ({ company, onSave, onCancel, isSaving }) => {
                     <input type="text" value={name} onChange={(e) => setName(e.target.value)} required disabled={isSaving} />
                 </div>
                 <div className="form-actions">
-                    <button type="submit" className="action-btn edit-btn" disabled={isSaving}>
+                    <button type="submit" className="action-btn save-btn" disabled={isSaving}>
                         {isSaving ? 'Guardando...' : 'Guardar'}
                     </button>
                     <button type="button" onClick={onCancel} disabled={isSaving}>
@@ -72,7 +72,7 @@ const HRManagerForm = ({ companies, onSave, onCancel, isSaving }) => {
                     </select>
                 </div>
                 <div className="form-actions">
-                    <button type="submit" className="action-btn edit-btn" disabled={isSaving}>
+                    <button type="submit" className="action-btn save-btn" disabled={isSaving}>
                         {isSaving ? 'Guardando...' : 'Guardar'}
                     </button>
                     <button type="button" onClick={onCancel} disabled={isSaving}>
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                 .order('name', { ascending: true });
 
             if (error) throw error;
-                setCompanies(data || []);
+            setCompanies(data || []);
         } catch (err) {
             setError('No se pudieron cargar las empresas.');
             console.error(err);
@@ -146,6 +146,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDeleteCompany = async (companyId) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar esta empresa? Esta acción no se puede deshacer.')) {
+            try {
+                const { error } = await supabase.from('companies').delete().eq('id', companyId);
+                if (error) throw error;
+                fetchCompanies();
+            } catch (err) {
+                setError(`Error al eliminar la empresa: ${err.message}`);
+            }
+        }
+    };
+
     const handleCreateHRManager = async ({ email, pin, fullName, companyId }) => {
         setIsSaving(true);
         setError('');
@@ -156,7 +168,6 @@ const AdminDashboard = () => {
 
             if (error) throw error;
 
-            // Edge Functions can return their own errors in the data object
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -192,15 +203,11 @@ const AdminDashboard = () => {
             )}
 
             <div className="hr-panel-header">
-                <h1>Panel de Super Administrador</h1>
+                <h1>Panel de Super Admin</h1>
+                <button onClick={() => { setEditingCompany(null); setIsCompanyFormVisible(true); }} className="hr-panel-add-btn">Añadir Empresa</button>
             </div>
 
             <div className="panel-section">
-                <div className="hr-panel-header">
-                    <h2>Gestión de Empresas</h2>
-                    <button onClick={() => { setEditingCompany(null); setIsCompanyFormVisible(true); }} className="hr-panel-add-btn">+ Crear Empresa</button>
-                </div>
-
                 {loading && <p>Cargando empresas...</p>}
                 {error && <p className="error-message">{error}</p>}
 
@@ -209,20 +216,30 @@ const AdminDashboard = () => {
                         <table className="hr-panel-table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Nombre de la Empresa</th>
-                                    <th>Módulo de Clientes</th>
+                                    <th>Módulo Clientes</th>
+                                    <th>Fecha de Creación</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {Array.isArray(companies) && companies.map(company => (
                                     <tr key={company.id}>
+                                        <td>{company.id}</td>
                                         <td>{company.name}</td>
-                                        <td>{company.has_clients_module ? 'Activado' : 'Desactivado'}</td>
                                         <td>
-                                            <button onClick={() => handleToggleModule(company)} className="action-btn edit-btn">
-                                                {company.has_clients_module ? 'Desactivar Módulo' : 'Activar Módulo'}
+                                            <span className={`status-pill ${company.has_clients_module ? 'status-active' : 'status-inactive'}`}>
+                                                {company.has_clients_module ? 'Activado' : 'Desactivado'}
+                                            </span>
+                                        </td>
+                                        <td>{new Date(company.created_at).toLocaleDateString()}</td>
+                                        <td className="actions-cell">
+                                            <button onClick={() => handleToggleModule(company)} className="action-btn">
+                                                {company.has_clients_module ? 'Desactivar' : 'Activar'}
                                             </button>
+                                            <button onClick={() => setIsHRFormVisible(true)} className="action-btn">Añadir Gestor RRHH</button>
+                                            <button onClick={() => handleDeleteCompany(company.id)} className="action-btn delete-btn">Eliminar</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -230,14 +247,6 @@ const AdminDashboard = () => {
                         </table>
                     </div>
                 )}
-            </div>
-
-            <div className="panel-section">
-                <div className="hr-panel-header">
-                    <h2>Gestión de RRHH</h2>
-                    <button onClick={() => setIsHRFormVisible(true)} className="hr-panel-add-btn">+ Crear Gestor RRHH</button>
-                </div>
-                 <p>Desde aquí puede crear nuevos gestores de RRHH y asignarlos a una empresa.</p>
             </div>
         </div>
     );

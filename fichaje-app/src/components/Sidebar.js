@@ -58,6 +58,14 @@ const Sidebar = () => {
                     </>
                 )}
 
+                {/* Super Admin Links */}
+                {user.role === 'Super Admin' && (
+                    <>
+                        <li className="menu-header">SUPER ADMIN</li>
+                        <li><NavLink className={getNavLinkClass} to="/admin/dashboard">Gestión de Empresas</NavLink></li>
+                    </>
+                )}
+
                 {/* The empty list item provides some space at the bottom before the logout button */}
                 <li></li>
                 <li className="logout-btn-container">
