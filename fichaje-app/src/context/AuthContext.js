@@ -51,42 +51,24 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async (authUser) => {
         try {
-            const { data: employeeData, error: employeeError } = await supabase
+            const { data: employeeData, error } = await supabase
                 .from('employees')
-                .select('*')
+                .select('*, companies(*)')
                 .eq('id', authUser.id)
                 .single();
 
-            if (employeeError) throw employeeError;
+            if (error) throw error;
 
             if (employeeData) {
                 setUser(employeeData);
                 setCompanyId(employeeData.company_id);
-
-                if (employeeData.company_id) {
-                    try {
-                        const { data: companyData, error: companyError } = await supabase
-                            .from('companies')
-                            .select('*')
-                            .eq('id', employeeData.company_id)
-                            .single();
-
-                        if (companyError) throw companyError;
-                        setSettings(companyData || {});
-                    } catch (companyError) {
-                        console.error('Could not fetch company settings, possibly due to RLS. Defaulting to empty settings.', companyError.message);
-                        setSettings({}); // Default to empty settings, but allow the user profile to continue loading.
-                    }
-                } else {
-                    setSettings({});
-                }
+                setSettings(employeeData.companies || {});
             }
         } catch (error) {
             console.error('Error fetching user data:', error.message);
             setUser(null);
             setCompanyId(null);
             setSettings({});
-            // This will be caught by the top-level session fetcher's finally block
         }
     };
 
