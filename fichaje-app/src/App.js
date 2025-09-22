@@ -21,6 +21,7 @@ import HRReports from './pages/hr/HRReports';
 import HRClientReports from './pages/hr/HRClientReports';
 import HRRequestsAdmin from './pages/hr/HRRequestsAdmin';
 import HRAnnualBalances from './pages/hr/HRAnnualBalances';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
@@ -60,7 +61,7 @@ const AppRoutes = () => {
                     {/* Redirect from root to the correct dashboard based on role */}
                     <Route index element={
                         user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
-                        user?.role === 'Super Admin' ? <Navigate to="/hr/clients" replace /> :
+                        user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
                         <Navigate to="/dashboard" replace />
                     } />
 
@@ -90,7 +91,7 @@ const AppRoutes = () => {
 
                     {/* Super Admin Routes */}
                     <Route path="admin" element={<ProtectedRoute requiredRole="Super Admin" />}>
-                        <Route path="dashboard" element={<div>Admin Dashboard Placeholder</div>} />
+                        <Route path="dashboard" element={<AdminDashboard />} />
                     </Route>
                 </Route>
             </Route>
