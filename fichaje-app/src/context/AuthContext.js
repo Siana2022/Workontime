@@ -64,14 +64,19 @@ export const AuthProvider = ({ children }) => {
                 setCompanyId(employeeData.company_id);
 
                 if (employeeData.company_id) {
-                    const { data: companyData, error: companyError } = await supabase
-                        .from('companies')
-                        .select('*')
-                        .eq('id', employeeData.company_id)
-                        .single();
+                    try {
+                        const { data: companyData, error: companyError } = await supabase
+                            .from('companies')
+                            .select('*')
+                            .eq('id', employeeData.company_id)
+                            .single();
 
-                    if (companyError) throw companyError;
-                    setSettings(companyData || {});
+                        if (companyError) throw companyError;
+                        setSettings(companyData || {});
+                    } catch (companyError) {
+                        console.error('Could not fetch company settings, possibly due to RLS. Defaulting to empty settings.', companyError.message);
+                        setSettings({}); // Default to empty settings, but allow the user profile to continue loading.
+                    }
                 } else {
                     setSettings({});
                 }
@@ -87,35 +92,37 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (fullName, pin) => {
         try {
+            // Step 1: Find the user by their exact full_name to get their email.
             const { data: employee, error: findError } = await supabase
                 .from('employees')
-                .select('email, pin')
+                .select('email') // Only need the email to proceed.
                 .eq('full_name', fullName)
                 .single();
 
-            if (findError || !employee) {
-                console.error('Login failed: User not found or name does not match exactly.', findError?.message);
+            if (findError || !employee || !employee.email) {
+                console.error('Login failed: User not found or email is missing for name -', fullName, findError?.message);
                 return false;
             }
 
-            if (employee.pin != pin) {
-                console.error('Login failed: Invalid PIN for user -', fullName);
-                return false;
-            }
-
+            // Step 2: Attempt to sign in using the fetched email and the provided PIN.
+            // Supabase handles the secure password/PIN check on the server.
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: employee.email,
                 password: pin,
             });
 
             if (signInError) {
+                // This is the only failure point we need to report to the user.
+                // It will trigger for wrong PIN, non-existent email in auth.users, etc.
                 console.error('Supabase sign-in error:', signInError.message);
                 return false;
             }
 
+            // If sign-in is successful, onAuthStateChange will handle fetching user data.
             return true;
 
         } catch (error) {
+            // This will catch unexpected errors, like network issues.
             console.error('An unexpected error occurred during login:', error.message);
             return false;
         }
