@@ -4,18 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
-    const auth = useAuth();
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
-        if (auth && typeof auth.logout === 'function') {
-            auth.logout();
-        } else {
-            console.error("Logout function is not available on the auth context.");
-        }
+        logout();
     };
-
-    // Destructure user separately for convenience in the JSX
-    const user = auth?.user;
 
     // Helper function to apply the active class.
     const getNavLinkClass = ({ isActive }) => isActive ? 'sidebar-link active-link' : 'sidebar-link';
@@ -27,7 +20,7 @@ const Sidebar = () => {
             </div>
             <ul className="sidebar-menu">
                 {/* Employee Links */}
-                {user?.role === 'Empleado' && (
+                {user.role === 'Empleado' && (
                     <>
                         <li><NavLink className={getNavLinkClass} to="/dashboard">Escritorio</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/history">Historial</NavLink></li>
@@ -36,7 +29,7 @@ const Sidebar = () => {
                 )}
 
                 {/* HR Manager Only Links */}
-                {user?.role === 'Gestor de RRHH' && (
+                {user.role === 'Gestor de RRHH' && (
                     <>
                         <li className="menu-header">Panel de RRHH</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/dashboard">Escritorio</NavLink></li>
@@ -62,14 +55,6 @@ const Sidebar = () => {
                         <li><NavLink className={getNavLinkClass} to="/hr/reports">Informes Generales</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/requests-admin">Solicitudes (Admin)</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/annual-balances">Saldos Anuales</NavLink></li>
-                    </>
-                )}
-
-                {/* Super Admin Links */}
-                {user?.role === 'Super Admin' && (
-                    <>
-                        <li className="menu-header">SUPER ADMIN</li>
-                        <li><NavLink className={getNavLinkClass} to="/admin/dashboard">Gestión de Empresas</NavLink></li>
                     </>
                 )}
 

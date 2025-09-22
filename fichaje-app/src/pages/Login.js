@@ -41,7 +41,6 @@ const Login = () => {
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit} className="login-form">
-                <img src="https://i.postimg.cc/D28NhLc6/WORKONTIME-20.png" alt="Work On Time Logo" className="login-logo" />
                 <h2>Iniciar Sesión</h2>
                 {error && <p className="error-message">{error}</p>}
                 <div className="form-group">

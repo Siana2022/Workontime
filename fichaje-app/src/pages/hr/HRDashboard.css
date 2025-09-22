@@ -1,37 +1,38 @@
 .hr-dashboard {
-    padding: 2rem;
-    background-color: #f8f9fa; /* Light gray background for the whole page */
+    padding: 20px;
     font-family: 'Sen', sans-serif;
-    min-height: 100vh;
 }
 
 .hr-dashboard h1 {
-    font-size: 1.8rem;
-    color: #343a40;
-    margin-bottom: 2rem;
+    /* Using the themed header style from the global App.css */
+    background-color: #04003B;
+    color: #ffffff;
+    padding: 20px;
+    margin: -20px -20px 30px -20px; /* Expand to container edges */
+    border-radius: 8px;
 }
 
 .dashboard-section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 40px;
 }
 
 .dashboard-section h2 {
-    font-size: 1.2rem;
-    color: #495057;
-    margin-bottom: 1.5rem;
+    font-size: 1.5em;
+    color: #343a40;
+    margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 2px solid #f0f2f5;
 }
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .shortcuts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
 
@@ -39,7 +40,6 @@
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 

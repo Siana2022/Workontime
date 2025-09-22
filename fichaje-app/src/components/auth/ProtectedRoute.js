@@ -3,15 +3,22 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ requiredRole, allowSuperAdmin = false }) => {
-    const { user, loading } = useAuth();
+    const { session, user, loading } = useAuth();
 
     if (loading) {
+        // You can render a loading spinner or a blank page here
         return <div>Cargando sesión...</div>;
     }
 
-    if (!user) {
-        // If not loading and no user object, redirect to login
+    if (!session) {
+        // If not loading and no session, redirect to login
         return <Navigate to="/login" replace />;
+    }
+
+    // If the user object is not yet available (e.g., still fetching), wait.
+    // This can happen in a brief moment after session is confirmed but before user data is loaded.
+    if (!user) {
+        return <div>Verificando usuario...</div>;
     }
 
     // Super Admins are allowed access to any route when specified
@@ -21,6 +28,7 @@ const ProtectedRoute = ({ requiredRole, allowSuperAdmin = false }) => {
 
     // If a specific role is required and the user's role does not match
     if (requiredRole && user.role !== requiredRole) {
+        // Redirect them to a page they are authorized to see
         return <Navigate to="/" replace />;
     }
 
