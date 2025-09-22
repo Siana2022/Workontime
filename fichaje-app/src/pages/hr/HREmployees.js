@@ -6,10 +6,11 @@ import './HREmployees.css';
 
 const EmployeeForm = ({ employee, schedules, departments, clients, assignedClientIds, onSave, onCancel, isSaving, settings }) => {
     const [formData, setFormData] = useState(employee || {});
+    const [avatarFile, setAvatarFile] = useState(null);
     const [selectedClients, setSelectedClients] = useState(new Set(assignedClientIds || []));
 
     useEffect(() => {
-        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', schedule_id: null, department_id: null, vacation_days: 22 };
+        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', avatar_url: '', schedule_id: null, department_id: null, vacation_days: 22 };
         setFormData(initialData);
         setSelectedClients(new Set(assignedClientIds || []));
     }, [employee, assignedClientIds]);
@@ -17,6 +18,12 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setAvatarFile(e.target.files[0]);
+        }
     };
 
     const handleClientToggle = (clientId) => {
@@ -31,7 +38,7 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(formData, Array.from(selectedClients));
+        onSave(formData, avatarFile, Array.from(selectedClients));
     };
 
     return (
@@ -70,6 +77,10 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                 <div className="form-group">
                     <label htmlFor="employee-vacation">Días de Vacaciones Totales</label>
                     <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} required disabled={isSaving} />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="employee-avatar">Avatar (Imagen)</label>
+                    <input type="file" id="employee-avatar" name="avatar" onChange={handleFileChange} accept="image/*" disabled={isSaving} />
                 </div>
 
                 {settings?.has_clients_module && (
@@ -186,13 +197,22 @@ const HREmployees = () => {
         }
     };
 
-    const handleSave = async (employeeData, assignedClientIds) => {
+    const handleSave = async (employeeData, avatarFile, assignedClientIds) => {
         setIsSaving(true);
         setError('');
         try {
+            let avatarUrl = employeeData.avatar_url;
+            if (avatarFile) {
+                const filePath = `public/${companyId}/${Date.now()}-${avatarFile.name}`;
+                const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
+                if (uploadError) throw uploadError;
+                avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
+            }
+
             const { id, ...formData } = employeeData;
             const record = {
                 ...formData,
+                avatar_url: avatarUrl,
                 schedule_id: formData.schedule_id || null,
                 department_id: formData.department_id || null,
                 vacation_days: parseInt(formData.vacation_days, 10)
@@ -204,7 +224,9 @@ const HREmployees = () => {
                 const { error } = await supabase.from('employees').update(record).eq('id', id).eq('company_id', companyId);
                 if (error) throw error;
             } else { // Create new employee
-                const { data, error } = await supabase.from('employees').insert([{ ...record, company_id: companyId }]).select().single();
+                // Generate a UUID for employees created here, as they don't have an auth user.
+                const newId = crypto.randomUUID();
+                const { data, error } = await supabase.from('employees').insert([{ id: newId, ...record, company_id: companyId }]).select().single();
                 if (error) throw error;
                 savedEmployeeId = data.id;
             }
@@ -263,6 +285,7 @@ const HREmployees = () => {
                     <table className="hr-panel-table">
                         <thead>
                             <tr>
+                                <th>Avatar</th>
                                 <th>Nombre</th>
                                 <th>Rol</th>
                                 <th>Departamento</th>
@@ -274,6 +297,7 @@ const HREmployees = () => {
                         <tbody>
                             {employees.map(employee => (
                                 <tr key={employee.id}>
+                                    <td><img src={employee.avatar_url || `https://i.pravatar.cc/150?u=${employee.id}`} alt={employee.full_name} className="employee-table-avatar" /></td>
                                     <td>{employee.full_name}</td>
                                     <td>{employee.role}</td>
                                     <td>{employee.department?.name || 'Sin asignar'}</td>
