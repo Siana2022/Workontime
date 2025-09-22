@@ -85,20 +85,47 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = async (name, pin) => {
-        // The login form uses "name", but Supabase auth needs an email.
-        // We'll assume the user enters their email in the "name" field.
-        const { error } = await supabase.auth.signInWithPassword({
-            email: name,
-            password: pin,
-        });
+    const login = async (fullName, pin) => {
+        try {
+            // Step 1: Find the user by their full_name
+            const { data: employee, error: findError } = await supabase
+                .from('employees')
+                .select('email, pin')
+                .eq('full_name', fullName)
+                .single();
 
-        if (error) {
-            console.error('Error logging in:', error.message);
-            return false; // Indicate failure
+            if (findError || !employee) {
+                console.error('Error finding user or user not found:', findError?.message);
+                return false; // User not found
+            }
+
+            // Step 2: Verify the PIN.
+            // Note: This is an insecure comparison. The PIN should be hashed.
+            // But for now, implementing the logic as requested.
+            if (employee.pin != pin) {
+                console.error('Invalid PIN for user:', fullName);
+                return false; // PIN is incorrect
+            }
+
+            // Step 3: If PIN is correct, sign in with the user's email.
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: employee.email,
+                password: pin, // Use the same PIN as the password for Supabase auth
+            });
+
+            if (signInError) {
+                // This error might happen if the PIN doesn't match the Supabase auth password.
+                console.error('Supabase sign-in error:', signInError.message);
+                return false; // Indicate failure
+            }
+
+            // onAuthStateChange will trigger automatically, fetching full user data.
+            return true; // Indicate success
+
+        } catch (error) {
+            console.error('An unexpected error occurred during login:', error.message);
+            return false;
         }
-        // onAuthStateChange will trigger automatically, fetching user data.
-        return true; // Indicate success
     };
 
     const value = {
