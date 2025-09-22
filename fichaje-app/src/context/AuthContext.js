@@ -87,24 +87,30 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (fullName, pin) => {
         try {
-            // Step 1: Find the user by their full_name
-            const { data: employee, error: findError } = await supabase
+            // Step 1: Find potential users by full_name (case-insensitive)
+            const { data: employees, error: findError } = await supabase
                 .from('employees')
                 .select('email, pin')
-                .ilike('full_name', fullName)
-                .single();
+                .ilike('full_name', fullName);
 
-            if (findError || !employee) {
-                console.error('Error finding user or user not found:', findError?.message);
-                return false; // User not found
+            if (findError) throw findError;
+
+            if (!employees || employees.length === 0) {
+                console.error('Login failed: User not found for name -', fullName);
+                return false;
             }
 
-            // Step 2: Verify the PIN.
-            // Note: This is an insecure comparison. The PIN should be hashed.
-            // But for now, implementing the logic as requested.
+            if (employees.length > 1) {
+                console.error('Login failed: Ambiguous login, multiple users found for name -', fullName);
+                return false; // Fail securely if name is not unique
+            }
+
+            const employee = employees[0]; // Exactly one user found
+
+            // Step 2: Verify the PIN for the unique user.
             if (employee.pin != pin) {
-                console.error('Invalid PIN for user:', fullName);
-                return false; // PIN is incorrect
+                console.error('Login failed: Invalid PIN for user -', fullName);
+                return false;
             }
 
             // Step 3: If PIN is correct, sign in with the user's email.
@@ -114,13 +120,12 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (signInError) {
-                // This error might happen if the PIN doesn't match the Supabase auth password.
                 console.error('Supabase sign-in error:', signInError.message);
-                return false; // Indicate failure
+                return false;
             }
 
             // onAuthStateChange will trigger automatically, fetching full user data.
-            return true; // Indicate success
+            return true;
 
         } catch (error) {
             console.error('An unexpected error occurred during login:', error.message);
