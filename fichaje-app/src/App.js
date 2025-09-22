@@ -60,7 +60,7 @@ const AppRoutes = () => {
                     {/* Redirect from root to the correct dashboard based on role */}
                     <Route index element={
                         user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
-                        user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
+                        user?.role === 'Super Admin' ? <Navigate to="/hr/clients" replace /> :
                         <Navigate to="/dashboard" replace />
                     } />
 
