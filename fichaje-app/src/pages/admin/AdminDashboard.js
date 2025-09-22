@@ -66,7 +66,7 @@ const HRManagerForm = ({ companies, onSave, onCancel, isSaving }) => {
                     <label>Empresa</label>
                     <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} required disabled={isSaving}>
                         <option value="" disabled>Seleccione una empresa</option>
-                        {companies.map(company => (
+                        {Array.isArray(companies) && companies.map(company => (
                             <option key={company.id} value={company.id}>{company.name}</option>
                         ))}
                     </select>
@@ -215,7 +215,7 @@ const AdminDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {companies.map(company => (
+                                {Array.isArray(companies) && companies.map(company => (
                                     <tr key={company.id}>
                                         <td>{company.name}</td>
                                         <td>{company.has_clients_module ? 'Activado' : 'Desactivado'}</td>
