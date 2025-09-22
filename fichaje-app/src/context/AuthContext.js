@@ -9,19 +9,24 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
-    const [user, setUser] = useState(null); // This will be the full employee record
+    const [user, setUser] = useState(null);
     const [companyId, setCompanyId] = useState(null);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchSessionAndUserData = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            if (session?.user) {
-                await fetchUserData(session.user);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+                if (session?.user) {
+                    await fetchUserData(session.user);
+                }
+            } catch (error) {
+                console.error("Error in initial session fetch: ", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchSessionAndUserData();
@@ -46,7 +51,6 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async (authUser) => {
         try {
-            // Step 1: Fetch the core employee data
             const { data: employeeData, error: employeeError } = await supabase
                 .from('employees')
                 .select('*')
@@ -59,7 +63,6 @@ export const AuthProvider = ({ children }) => {
                 setUser(employeeData);
                 setCompanyId(employeeData.company_id);
 
-                // Step 2: Fetch the company data separately for settings
                 if (employeeData.company_id) {
                     const { data: companyData, error: companyError } = await supabase
                         .from('companies')
@@ -67,14 +70,10 @@ export const AuthProvider = ({ children }) => {
                         .eq('id', employeeData.company_id)
                         .single();
 
-                    if (companyError) {
-                        console.error('Could not fetch company settings:', companyError);
-                        setSettings({}); // Default to empty settings if company fetch fails
-                    } else {
-                        setSettings(companyData || {});
-                    }
+                    if (companyError) throw companyError;
+                    setSettings(companyData || {});
                 } else {
-                    setSettings({}); // No company associated
+                    setSettings({});
                 }
             }
         } catch (error) {
@@ -82,31 +81,28 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setCompanyId(null);
             setSettings({});
-            setLoading(false); // Ensure loading is finished even on error
+            // This will be caught by the top-level session fetcher's finally block
         }
     };
 
     const login = async (fullName, pin) => {
         try {
-            // Step 1: Find the user by their exact full_name (case-sensitive)
             const { data: employee, error: findError } = await supabase
                 .from('employees')
                 .select('email, pin')
                 .eq('full_name', fullName)
-                .single(); // Expect exactly one result
+                .single();
 
             if (findError || !employee) {
                 console.error('Login failed: User not found or name does not match exactly.', findError?.message);
                 return false;
             }
 
-            // Step 2: Verify the PIN.
             if (employee.pin != pin) {
                 console.error('Login failed: Invalid PIN for user -', fullName);
                 return false;
             }
 
-            // Step 3: If PIN is correct, sign in with the user's email.
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: employee.email,
                 password: pin,
@@ -127,12 +123,12 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         session,
-        user, // The employee record
+        user,
         companyId,
         settings,
         login,
         logout: () => supabase.auth.signOut(),
-        loading, // Expose loading state
+        loading,
     };
 
     return (
