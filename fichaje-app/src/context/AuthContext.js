@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }) => {
         companyId,
         settings,
         login,
-        signOut: () => supabase.auth.signOut(),
+        logout: () => supabase.auth.signOut(),
         loading, // Expose loading state
     };
 

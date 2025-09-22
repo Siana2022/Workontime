@@ -31,18 +31,13 @@ const CompanyForm = ({ company, onSave, onCancel, isSaving }) => {
     );
 };
 
-const HRManagerForm = ({ companies, onSave, onCancel, isSaving }) => {
+const HRManagerForm = ({ companyId, onSave, onCancel, isSaving }) => {
     const [email, setEmail] = useState('');
     const [pin, setPin] = useState('');
     const [fullName, setFullName] = useState('');
-    const [companyId, setCompanyId] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!companyId) {
-            alert('Por favor, seleccione una empresa.');
-            return;
-        }
         onSave({ email, pin, fullName, companyId });
     };
 
@@ -61,15 +56,6 @@ const HRManagerForm = ({ companies, onSave, onCancel, isSaving }) => {
                 <div className="form-group">
                     <label>PIN (Contraseña)</label>
                     <input type="password" value={pin} onChange={(e) => setPin(e.target.value)} required disabled={isSaving} />
-                </div>
-                <div className="form-group">
-                    <label>Empresa</label>
-                    <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} required disabled={isSaving}>
-                        <option value="" disabled>Seleccione una empresa</option>
-                        {Array.isArray(companies) && companies.map(company => (
-                            <option key={company.id} value={company.id}>{company.name}</option>
-                        ))}
-                    </select>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="action-btn save-btn" disabled={isSaving}>
@@ -92,6 +78,7 @@ const AdminDashboard = () => {
     const [isCompanyFormVisible, setIsCompanyFormVisible] = useState(false);
     const [isHRFormVisible, setIsHRFormVisible] = useState(false);
     const [editingCompany, setEditingCompany] = useState(null);
+    const [targetCompanyId, setTargetCompanyId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const fetchCompanies = async () => {
@@ -183,6 +170,11 @@ const AdminDashboard = () => {
         }
     };
 
+    const openHRForm = (companyId) => {
+        setTargetCompanyId(companyId);
+        setIsHRFormVisible(true);
+    };
+
     return (
         <div className="admin-dashboard-container">
             {isCompanyFormVisible && (
@@ -195,7 +187,7 @@ const AdminDashboard = () => {
             )}
             {isHRFormVisible && (
                 <HRManagerForm
-                    companies={companies}
+                    companyId={targetCompanyId}
                     onSave={handleCreateHRManager}
                     onCancel={() => setIsHRFormVisible(false)}
                     isSaving={isSaving}
@@ -238,7 +230,7 @@ const AdminDashboard = () => {
                                             <button onClick={() => handleToggleModule(company)} className="action-btn">
                                                 {company.has_clients_module ? 'Desactivar' : 'Activar'}
                                             </button>
-                                            <button onClick={() => setIsHRFormVisible(true)} className="action-btn">Añadir Gestor RRHH</button>
+                                            <button onClick={() => openHRForm(company.id)} className="action-btn">Añadir Gestor RRHH</button>
                                             <button onClick={() => handleDeleteCompany(company.id)} className="action-btn delete-btn">Eliminar</button>
                                         </td>
                                     </tr>
