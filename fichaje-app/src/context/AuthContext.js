@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
             const { data: employee, error: findError } = await supabase
                 .from('employees')
                 .select('email, pin')
-                .eq('full_name', fullName)
+                .ilike('full_name', fullName)
                 .single();
 
             if (findError || !employee) {
