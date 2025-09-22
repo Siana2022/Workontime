@@ -82,6 +82,7 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setCompanyId(null);
             setSettings({});
+            setLoading(false); // Ensure loading is finished even on error
         }
     };
 
