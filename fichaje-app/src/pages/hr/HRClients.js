@@ -56,15 +56,13 @@ const ClientForm = ({ client, onSave, onCancel, isSaving }) => {
 };
 
 const HRClients = () => {
-    const { companyId, settings, user } = useAuth();
+    const { companyId, settings } = useAuth();
     const [clients, setClients] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
-
-    const isModuleActive = settings?.has_clients_module || user?.role === 'Super Admin';
 
     const fetchClients = async () => {
         if (!companyId) return;
@@ -83,7 +81,7 @@ const HRClients = () => {
     };
 
     useEffect(() => {
-        if (isModuleActive) {
+        if (settings?.has_clients_module) {
             fetchClients();
         } else {
             setLoading(false);
@@ -140,7 +138,7 @@ const HRClients = () => {
         setEditingClient(null);
     };
 
-    if (!isModuleActive) {
+    if (!settings?.has_clients_module) {
         return (
             <div className="hr-panel-container">
                 <h1>Gestión de Clientes</h1>

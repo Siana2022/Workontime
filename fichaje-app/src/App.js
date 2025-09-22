@@ -21,7 +21,6 @@ import HRReports from './pages/hr/HRReports';
 import HRClientReports from './pages/hr/HRClientReports';
 import HRRequestsAdmin from './pages/hr/HRRequestsAdmin';
 import HRAnnualBalances from './pages/hr/HRAnnualBalances';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
@@ -29,11 +28,8 @@ import './App.css';
 // A layout for authenticated users that includes the sidebar
 const AppLayout = () => {
     const { user } = useAuth();
-
-    // With the custom auth, we just need to wait for the user object to be loaded.
-    if (!user) {
-        return <div className="loading-container">Verificando usuario...</div>;
-    }
+    // Do not render the layout if we don't have a user object yet
+    if (!user) return <div>Cargando...</div>;
 
     return (
         <div className="App">
@@ -47,24 +43,24 @@ const AppLayout = () => {
 
 // This component handles the main routing logic
 const AppRoutes = () => {
-    const { user, loading } = useAuth();
+    const { session, user, loading } = useAuth();
 
     if (loading) {
-        return <div className="loading-container">Cargando aplicación...</div>;
+        return <div>Cargando aplicación...</div>;
     }
 
     return (
         <Routes>
-            {/* If there's no user, show the login page. Otherwise, redirect to the main app. */}
-            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+            <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
             <Route path="/kiosk" element={<Kiosk />} />
 
             {/* All authenticated routes are children of this element */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<AppLayout />}>
+                    {/* Redirect from root to the correct dashboard based on role */}
                     <Route index element={
-                        user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
                         user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
+                        user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
                         <Navigate to="/dashboard" replace />
                     } />
 
@@ -86,7 +82,7 @@ const AppRoutes = () => {
                         <Route path="holidays" element={<HRHolidays />} />
                         <Route path="schedule-types" element={<HRScheduleTypes />} />
                         <Route path="clients" element={<HRClients />} />
-                        <Route path="reports" an d element={<HRReports />} />
+                        <Route path="reports" element={<HRReports />} />
                         <Route path="client-reports" element={<HRClientReports />} />
                         <Route path="requests-admin" element={<HRRequestsAdmin />} />
                         <Route path="annual-balances" element={<HRAnnualBalances />} />
@@ -94,13 +90,13 @@ const AppRoutes = () => {
 
                     {/* Super Admin Routes */}
                     <Route path="admin" element={<ProtectedRoute requiredRole="Super Admin" />}>
-                        <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="dashboard" element={<div>Admin Dashboard Placeholder</div>} />
                     </Route>
                 </Route>
             </Route>
 
             {/* Fallback for any other path */}
-            <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
+            <Route path="*" element={<Navigate to={session ? "/" : "/login"} />} />
         </Routes>
     );
 };
