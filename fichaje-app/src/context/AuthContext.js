@@ -8,121 +8,88 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [session, setSession] = useState(null);
     const [user, setUser] = useState(null);
     const [companyId, setCompanyId] = useState(null);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSessionAndUserData = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                setSession(session);
-                if (session?.user) {
-                    await fetchUserData(session.user);
-                }
-            } catch (error) {
-                console.error("Error in initial session fetch: ", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSessionAndUserData();
-
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                setSession(session);
-                if (session?.user) {
-                    await fetchUserData(session.user);
-                } else {
-                    setUser(null);
-                    setCompanyId(null);
-                    setSettings({});
-                }
-            }
-        );
-
-        return () => {
-            authListener.subscription.unsubscribe();
-        };
-    }, []);
-
-    const fetchUserData = async (authUser) => {
+        // On initial load, check localStorage for a saved user session
         try {
-            const { data: employeeData, error } = await supabase
-                .from('employees')
-                .select('*, companies(*)')
-                .eq('id', authUser.id)
-                .single();
-
-            if (error) throw error;
-
-            if (employeeData) {
-                setUser(employeeData);
-                setCompanyId(employeeData.company_id);
-                setSettings(employeeData.companies || {});
+            const savedUser = localStorage.getItem('workontime_user');
+            if (savedUser) {
+                const parsedUser = JSON.parse(savedUser);
+                // We need to fetch fresh company settings, but we can set the user immediately
+                setUser(parsedUser);
+                setCompanyId(parsedUser.company_id);
+                if (parsedUser.companies) {
+                    setSettings(parsedUser.companies);
+                }
             }
         } catch (error) {
-            console.error('Error fetching user data:', error.message);
-            setUser(null);
-            setCompanyId(null);
-            setSettings({});
+            console.error("Failed to parse user from localStorage", error);
+            localStorage.removeItem('workontime_user');
+        } finally {
+            setLoading(false);
         }
-    };
+    }, []);
 
     const login = async (fullName, pin) => {
+        setLoading(true);
         try {
-            // Step 1: Find the user by their exact full_name to get their email.
-            const { data: employee, error: findError } = await supabase
+            const { data: employee, error } = await supabase
                 .from('employees')
-                .select('email') // Only need the email to proceed.
+                .select('*, companies(*)') // Fetch employee and their related company data
                 .eq('full_name', fullName)
                 .single();
 
-            if (findError || !employee || !employee.email) {
-                console.error('Login failed: User not found or email is missing for name -', fullName, findError?.message);
+            if (error || !employee) {
+                console.error('Login failed: User not found or name does not match exactly.', error?.message);
                 return false;
             }
 
-            // Step 2: Attempt to sign in using the fetched email and the provided PIN.
-            // Supabase handles the secure password/PIN check on the server.
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-                email: employee.email,
-                password: pin,
-            });
-
-            if (signInError) {
-                // This is the only failure point we need to report to the user.
-                // It will trigger for wrong PIN, non-existent email in auth.users, etc.
-                console.error('Supabase sign-in error:', signInError.message);
+            // Manual PIN check (as per the custom auth flow)
+            if (employee.pin != pin) {
+                console.error('Login failed: Invalid PIN for user -', fullName);
                 return false;
             }
 
-            // If sign-in is successful, onAuthStateChange will handle fetching user data.
+            // If credentials are correct, set user state and save to localStorage
+            setUser(employee);
+            setCompanyId(employee.company_id);
+            setSettings(employee.companies || {});
+            localStorage.setItem('workontime_user', JSON.stringify(employee));
+
             return true;
 
         } catch (error) {
-            // This will catch unexpected errors, like network issues.
             console.error('An unexpected error occurred during login:', error.message);
             return false;
+        } finally {
+            setLoading(false);
         }
     };
 
+    const logout = () => {
+        setUser(null);
+        setCompanyId(null);
+        setSettings({});
+        localStorage.removeItem('workontime_user');
+    };
+
     const value = {
-        session,
+        // No longer providing Supabase 'session'
         user,
         companyId,
         settings,
         login,
-        logout: () => supabase.auth.signOut(),
+        logout,
         loading,
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };

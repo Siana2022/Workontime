@@ -28,22 +28,9 @@ import './App.css';
 
 // A layout for authenticated users that includes the sidebar
 const AppLayout = () => {
-    const { user, session, logout } = useAuth();
+    const { user } = useAuth();
 
-    // This is the new graceful failure state.
-    // If we have a session but couldn't load the user profile (e.g., due to duplicate IDs),
-    // show an error instead of getting stuck on a loading screen.
-    if (session && !user) {
-        return (
-            <div className="error-container">
-                <h1>Error al Cargar Perfil</h1>
-                <p>No se pudo cargar la información de tu perfil de empleado. Esto puede deberse a un problema de inconsistencia de datos en la base de datos (como un ID de usuario duplicado). Por favor, contacta al administrador.</p>
-                <button onClick={logout} className="logout-btn">Salir</button>
-            </div>
-        );
-    }
-
-    // Original loading state for when user is being fetched normally.
+    // With the custom auth, we just need to wait for the user object to be loaded.
     if (!user) {
         return <div className="loading-container">Verificando usuario...</div>;
     }
@@ -60,7 +47,7 @@ const AppLayout = () => {
 
 // This component handles the main routing logic
 const AppRoutes = () => {
-    const { session, user, loading } = useAuth();
+    const { user, loading } = useAuth();
 
     if (loading) {
         return <div className="loading-container">Cargando aplicación...</div>;
@@ -68,17 +55,17 @@ const AppRoutes = () => {
 
     return (
         <Routes>
-            <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+            {/* If there's no user, show the login page. Otherwise, redirect to the main app. */}
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
             <Route path="/kiosk" element={<Kiosk />} />
 
             {/* All authenticated routes are children of this element */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<AppLayout />}>
-                    {/* NEW REDIRECTION LOGIC */}
                     <Route index element={
                         user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
                         user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
-                        <Navigate to="/dashboard" replace /> // Default for 'Empleado' and others
+                        <Navigate to="/dashboard" replace />
                     } />
 
                     {/* Employee Routes */}
@@ -99,7 +86,7 @@ const AppRoutes = () => {
                         <Route path="holidays" element={<HRHolidays />} />
                         <Route path="schedule-types" element={<HRScheduleTypes />} />
                         <Route path="clients" element={<HRClients />} />
-                        <Route path="reports" element={<HRReports />} />
+                        <Route path="reports" an d element={<HRReports />} />
                         <Route path="client-reports" element={<HRClientReports />} />
                         <Route path="requests-admin" element={<HRRequestsAdmin />} />
                         <Route path="annual-balances" element={<HRAnnualBalances />} />
@@ -113,7 +100,7 @@ const AppRoutes = () => {
             </Route>
 
             {/* Fallback for any other path */}
-            <Route path="*" element={<Navigate to={session ? "/" : "/login"} />} />
+            <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
         </Routes>
     );
 };
