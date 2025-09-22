@@ -150,32 +150,15 @@ const AdminDashboard = () => {
         setIsSaving(true);
         setError('');
         try {
-            // Note: Creating users from the client-side requires the session to have elevated privileges,
-            // or for table policies to be configured correctly. This might fail if permissions are not sufficient.
-            // A more secure approach is to use a Supabase Edge Function.
-            const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-                email: email,
-                password: pin,
-                email_confirm: true, // Auto-confirm the email
+            const { data, error } = await supabase.functions.invoke('create-hr-manager', {
+                body: { email, pin, fullName, companyId },
             });
 
-            if (authError) throw authError;
+            if (error) throw error;
 
-            const newUserId = authData.user.id;
-
-            const { error: profileError } = await supabase.from('employees').insert([{
-                id: newUserId,
-                full_name: fullName,
-                email: email,
-                pin: pin,
-                role: 'Gestor de RRHH',
-                company_id: companyId
-            }]);
-
-            if (profileError) {
-                // If profile creation fails, we should try to clean up the created auth user.
-                await supabase.auth.admin.deleteUser(newUserId);
-                throw profileError;
+            // Edge Functions can return their own errors in the data object
+            if (data.error) {
+                throw new Error(data.error);
             }
 
             alert('¡Gestor de RRHH creado con éxito!');
