@@ -87,27 +87,19 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (fullName, pin) => {
         try {
-            // Step 1: Find potential users by full_name (case-insensitive)
-            const { data: employees, error: findError } = await supabase
+            // Step 1: Find the user by their exact full_name (case-sensitive)
+            const { data: employee, error: findError } = await supabase
                 .from('employees')
                 .select('email, pin')
-                .ilike('full_name', fullName);
+                .eq('full_name', fullName)
+                .single(); // Expect exactly one result
 
-            if (findError) throw findError;
-
-            if (!employees || employees.length === 0) {
-                console.error('Login failed: User not found for name -', fullName);
+            if (findError || !employee) {
+                console.error('Login failed: User not found or name does not match exactly.', findError?.message);
                 return false;
             }
 
-            if (employees.length > 1) {
-                console.error('Login failed: Ambiguous login, multiple users found for name -', fullName);
-                return false; // Fail securely if name is not unique
-            }
-
-            const employee = employees[0]; // Exactly one user found
-
-            // Step 2: Verify the PIN for the unique user.
+            // Step 2: Verify the PIN.
             if (employee.pin != pin) {
                 console.error('Login failed: Invalid PIN for user -', fullName);
                 return false;
@@ -116,7 +108,7 @@ export const AuthProvider = ({ children }) => {
             // Step 3: If PIN is correct, sign in with the user's email.
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: employee.email,
-                password: pin, // Use the same PIN as the password for Supabase auth
+                password: pin,
             });
 
             if (signInError) {
@@ -124,7 +116,6 @@ export const AuthProvider = ({ children }) => {
                 return false;
             }
 
-            // onAuthStateChange will trigger automatically, fetching full user data.
             return true;
 
         } catch (error) {
