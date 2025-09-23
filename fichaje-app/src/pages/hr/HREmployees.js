@@ -55,8 +55,14 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                 </div>
                 <div className="form-group">
                     <label htmlFor="employee-pin">PIN (Contraseña)</label>
-                    <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required disabled={isSaving || !!employee} />
+                    <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required={!employee} disabled={isSaving || !!employee} />
                 </div>
+                {employee && (
+                    <div className="form-group">
+                        <label htmlFor="employee-new-password">Nueva Contraseña (opcional)</label>
+                        <input type="password" id="employee-new-password" name="newPassword" value={formData.newPassword || ''} onChange={handleChange} disabled={isSaving} placeholder="Dejar en blanco para no cambiar" />
+                    </div>
+                )}
                 <div className="form-group">
                     <label htmlFor="employee-role">Rol</label>
                     <select id="employee-role" name="role" value={formData.role || 'Empleado'} onChange={handleChange} disabled={isSaving}>
@@ -213,6 +219,15 @@ const HREmployees = () => {
             let savedEmployeeId = id;
 
             if (id) { // Update existing employee
+                // 1. Update password if a new one is provided
+                if (formData.newPassword) {
+                    const { error: passwordError } = await supabase.functions.invoke('update-user-password', {
+                        body: { userId: id, newPassword: formData.newPassword },
+                    });
+                    if (passwordError) throw new Error(`Failed to update password: ${passwordError.message}`);
+                }
+
+                // 2. Update avatar if a new one is provided
                 let avatarUrl = formData.avatar_url;
                 if (avatarFile) {
                     const filePath = `public/${companyId}/${Date.now()}-${avatarFile.name}`;
@@ -221,7 +236,8 @@ const HREmployees = () => {
                     avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
                 }
 
-                const { email, pin, role, ...updatableData } = formData;
+                // 3. Update the rest of the employee's profile data
+                const { email, pin, role, newPassword, ...updatableData } = formData;
                 const record = {
                     ...updatableData,
                     avatar_url: avatarUrl,
@@ -229,13 +245,13 @@ const HREmployees = () => {
                     department_id: updatableData.department_id || null,
                     vacation_days: parseInt(updatableData.vacation_days, 10)
                 };
-                const { error } = await supabase.from('employees').update(record).eq('id', id);
-                if (error) throw error;
+                const { error: profileError } = await supabase.from('employees').update(record).eq('id', id);
+                if (profileError) throw profileError;
             } else { // Create new employee using Edge Function
                 const { data, error } = await supabase.functions.invoke('create-employee', {
                     body: {
                         email: formData.email,
-                        pin: formData.pin,
+                        password: formData.pin, // Send `pin` from form as `password`
                         fullName: formData.full_name,
                         companyId: companyId,
                         role: formData.role
