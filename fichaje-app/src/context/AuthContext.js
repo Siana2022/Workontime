@@ -51,22 +51,31 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const fetchUserData = async (authUser) => {
+        console.log("Fetching user data for auth user:", authUser.id);
         try {
+            console.log("Step 1: Fetching from 'employees' table with joined 'companies'.");
             const { data: employeeData, error } = await supabase
                 .from('employees')
                 .select('*, companies(*)')
                 .eq('id', authUser.id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error("ERROR during 'employees' or 'companies' fetch:", error);
+                throw error;
+            }
+            console.log("Successfully fetched employee and company data:", employeeData);
 
             if (employeeData) {
                 setUser(employeeData);
                 setCompanyId(employeeData.company_id);
                 setSettings(employeeData.companies || {});
+                console.log("User profile and settings have been set in context.");
+            } else {
+                console.warn("No employee data found for auth user:", authUser.id);
             }
         } catch (error) {
-            console.error('Error fetching user data:', error.message);
+            console.error('Error in fetchUserData catch block:', error.message);
             setUser(null);
             setCompanyId(null);
             setSettings({});
