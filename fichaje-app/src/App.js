@@ -21,15 +21,30 @@ import HRReports from './pages/hr/HRReports';
 import HRClientReports from './pages/hr/HRClientReports';
 import HRRequestsAdmin from './pages/hr/HRRequestsAdmin';
 import HRAnnualBalances from './pages/hr/HRAnnualBalances';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
 
 // A layout for authenticated users that includes the sidebar
 const AppLayout = () => {
-    const { user } = useAuth();
-    // Do not render the layout if we don't have a user object yet
-    if (!user) return <div>Cargando...</div>;
+    const { user, session, logout } = useAuth();
+
+    // Graceful failure state for data integrity issues
+    if (session && !user) {
+        return (
+            <div className="error-container">
+                <h1>Error al Cargar Perfil</h1>
+                <p>No se pudo cargar la información de tu perfil de empleado. Esto puede deberse a un problema de inconsistencia de datos en la base de datos (como un ID de usuario duplicado). Por favor, contacta al administrador.</p>
+                <button onClick={logout} className="logout-btn">Salir</button>
+            </div>
+        );
+    }
+
+    // This will show while the user profile is being fetched after a session is found.
+    if (!user) {
+        return <div className="loading-container">Verificando usuario...</div>;
+    }
 
     return (
         <div className="App">
@@ -46,7 +61,7 @@ const AppRoutes = () => {
     const { session, user, loading } = useAuth();
 
     if (loading) {
-        return <div>Cargando aplicación...</div>;
+        return <div className="loading-container">Cargando aplicación...</div>;
     }
 
     return (
@@ -57,10 +72,9 @@ const AppRoutes = () => {
             {/* All authenticated routes are children of this element */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<AppLayout />}>
-                    {/* Redirect from root to the correct dashboard based on role */}
                     <Route index element={
-                        user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
                         user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
+                        user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
                         <Navigate to="/dashboard" replace />
                     } />
 
@@ -90,7 +104,7 @@ const AppRoutes = () => {
 
                     {/* Super Admin Routes */}
                     <Route path="admin" element={<ProtectedRoute requiredRole="Super Admin" />}>
-                        <Route path="dashboard" element={<div>Admin Dashboard Placeholder</div>} />
+                        <Route path="dashboard" element={<AdminDashboard />} />
                     </Route>
                 </Route>
             </Route>
