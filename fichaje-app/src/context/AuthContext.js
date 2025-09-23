@@ -15,93 +15,60 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSessionAndUserData = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                setSession(session);
-                if (session?.user) {
-                    await fetchUserData(session.user);
-                }
-            } catch (error) {
-                console.error("Error in initial session fetch: ", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSessionAndUserData();
-
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                setSession(session);
-                setUser(null); // Reset user profile on auth change
-                if (session?.user) {
-                    await fetchUserData(session.user);
-                } else {
-                    // Clear profile data on logout
-                    setCompanyId(null);
-                    setSettings({});
-                }
-            }
-        );
-
-        return () => {
-            authListener.subscription.unsubscribe();
-        };
-    }, []);
-
-    const fetchUserData = async (authUser) => {
-        console.log("Fetching user data for auth user:", authUser.id);
         try {
-            console.log("Step 1: Fetching from 'employees' table with joined 'companies'.");
-            const { data: employeeData, error } = await supabase
+            const storedUser = localStorage.getItem('fichaje-user');
+            if (storedUser) {
+                const userData = JSON.parse(storedUser);
+                setUser(userData);
+                setSession(userData); // The user object itself will act as the session.
+                setCompanyId(userData.company_id);
+                setSettings(userData.companies || {});
+            }
+        } catch (error) {
+            console.error("Failed to parse user from localStorage", error);
+            localStorage.removeItem('fichaje-user'); // Clear corrupted data
+        } finally {
+            setLoading(false);
+        }
+    }, []); // Run only once on mount
+
+    const login = async (fullName, pin) => {
+        try {
+            const { data: userData, error } = await supabase
                 .from('employees')
                 .select('*, companies(*)')
-                .eq('id', authUser.id)
+                .eq('full_name', fullName)
+                .eq('pin', pin)
                 .single();
 
             if (error) {
-                console.error("ERROR during 'employees' or 'companies' fetch:", error);
-                throw error;
-            }
-            console.log("Successfully fetched employee and company data:", employeeData);
-
-            if (employeeData) {
-                setUser(employeeData);
-                setCompanyId(employeeData.company_id);
-                setSettings(employeeData.companies || {});
-                console.log("User profile and settings have been set in context.");
-            } else {
-                console.error("CRITICAL: No employee profile found for authenticated user:", authUser.id, ". Forcing logout.");
-                await supabase.auth.signOut();
-            }
-        } catch (error) {
-            console.error('Error in fetchUserData catch block:', error.message);
-            setUser(null);
-            setCompanyId(null);
-            setSettings({});
-        }
-    };
-
-    const login = async (email, password) => {
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-
-            if (error) {
-                console.error('Supabase sign-in error:', error.message);
-                return { success: false, error: error.message };
+                console.error('Error logging in:', error.message);
+                return { success: false, error: 'Nombre o PIN incorrecto.' };
             }
 
-            // onAuthStateChange will handle fetching the user data
-            return { success: true };
+            if (userData) {
+                localStorage.setItem('fichaje-user', JSON.stringify(userData));
+                setUser(userData);
+                setSession(userData); // The user object itself will act as the session.
+                setCompanyId(userData.company_id);
+                setSettings(userData.companies || {});
+                return { success: true, user: userData };
+            }
+
+            return { success: false, error: 'Nombre o PIN incorrecto.' };
 
         } catch (error) {
             console.error('An unexpected error occurred during login:', error.message);
-            return { success: false, error: 'An unexpected error occurred.' };
+            return { success: false, error: 'Ocurrió un error inesperado.' };
         }
+    };
+
+    const logout = () => {
+        localStorage.removeItem('fichaje-user');
+        setUser(null);
+        setSession(null);
+        setCompanyId(null);
+        setSettings({});
     };
 
     const value = {
@@ -110,7 +77,7 @@ export const AuthProvider = ({ children }) => {
         companyId,
         settings,
         login,
-        logout: () => supabase.auth.signOut(),
+        logout,
         loading,
     };
 

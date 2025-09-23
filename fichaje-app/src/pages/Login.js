@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [pin, setPin] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
@@ -13,8 +13,8 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!email || !password) {
-            setError('Email y contraseña son obligatorios.');
+        if (!name || !pin) {
+            setError('Nombre y PIN son obligatorios.');
             return;
         }
 
@@ -22,15 +22,14 @@ const Login = () => {
         setError('');
 
         try {
-            const result = await login(email, password);
+            const success = await login(name, pin);
 
-            if (result.success) {
+            if (success) {
                 // Navigate to the root. App.js will handle the role-based redirect.
+                // The loading state will be implicitly reset by the component unmounting on navigation.
                 navigate('/');
             } else {
-                // Use a more generic error message for security
-                setError('Email o contraseña incorrecto.');
-                console.error("Login failed:", result.error); // Log the specific error for debugging
+                setError('Nombre o PIN incorrecto.');
                 setLoading(false);
             }
         } catch (err) {
@@ -45,27 +44,25 @@ const Login = () => {
                 <h2>Iniciar Sesión</h2>
                 {error && <p className="error-message">{error}</p>}
                 <div className="form-group">
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="name">Nombre</label>
                     <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         required
                         disabled={loading}
-                        autoComplete="email"
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="password">Contraseña</label>
+                    <label htmlFor="pin">PIN</label>
                     <input
                         type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        id="pin"
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
                         required
                         disabled={loading}
-                        autoComplete="current-password"
                     />
                 </div>
                 <button type="submit" className="login-btn" disabled={loading}>

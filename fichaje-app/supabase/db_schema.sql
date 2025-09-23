@@ -61,7 +61,7 @@ CREATE TABLE public.employees (
     id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at timestamptz DEFAULT now() NOT NULL,
     full_name text NOT NULL,
-    email text NOT NULL UNIQUE,
+    pin text NOT NULL,
     role text NOT NULL,
     vacation_days integer DEFAULT 22 NOT NULL,
     company_id bigint NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
