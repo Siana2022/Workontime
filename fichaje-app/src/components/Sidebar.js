@@ -10,7 +10,6 @@ const Sidebar = () => {
         logout();
     };
 
-    // Helper function to apply the active class.
     const getNavLinkClass = ({ isActive }) => isActive ? 'sidebar-link active-link' : 'sidebar-link';
 
     return (
@@ -19,8 +18,7 @@ const Sidebar = () => {
                 <img src="https://i.postimg.cc/nZvJGfq9/WORKONTIME-21.png" alt="Logo" className="sidebar-logo" />
             </div>
             <ul className="sidebar-menu">
-                {/* Employee Links */}
-                {user.role === 'Empleado' && (
+                {user?.role === 'Empleado' && (
                     <>
                         <li><NavLink className={getNavLinkClass} to="/dashboard">Escritorio</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/history">Historial</NavLink></li>
@@ -28,29 +26,24 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {/* HR Manager Only Links */}
-                {user.role === 'Gestor de RRHH' && (
+                {user?.role === 'Gestor de RRHH' && (
                     <>
                         <li className="menu-header">Panel de RRHH</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/dashboard">Escritorio</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/employees">Empleados</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/departments">Departamentos</NavLink></li>
-
                         <li className="menu-header">Ausencias e Incidencias</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/absences">Ausencias</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/incidents">Incidencias</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/absence-types">Tipos de Ausencia</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/incident-types">Tipos de Incidencia</NavLink></li>
-
                         <li className="menu-header">Calendario y Horarios</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/calendar">Calendario Global</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/holidays">Días Festivos</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/schedule-types">Tipos de horario</NavLink></li>
-
                         <li className="menu-header">Clientes e Informes</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/clients">Gestión de Clientes</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/client-reports">Informes de Cliente</NavLink></li>
-
                         <li className="menu-header">Administración</li>
                         <li><NavLink className={getNavLinkClass} to="/hr/reports">Informes Generales</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/hr/requests-admin">Solicitudes (Admin)</NavLink></li>
@@ -58,7 +51,13 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {/* The empty list item provides some space at the bottom before the logout button */}
+                {user?.role === 'Super Admin' && (
+                    <>
+                        <li className="menu-header">SUPER ADMIN</li>
+                        <li><NavLink className={getNavLinkClass} to="/admin/dashboard">Gestión de Empresas</NavLink></li>
+                    </>
+                )}
+
                 <li></li>
                 <li className="logout-btn-container">
                     <button onClick={handleLogout} className="logout-btn">Salir</button>

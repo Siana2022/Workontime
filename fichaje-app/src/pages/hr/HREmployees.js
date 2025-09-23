@@ -10,7 +10,7 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
     const [selectedClients, setSelectedClients] = useState(new Set(assignedClientIds || []));
 
     useEffect(() => {
-        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', avatar_url: '', schedule_id: null, department_id: null, vacation_days: 22 };
+        const initialData = employee || { full_name: '', pin: '', email: '', role: 'Empleado', schedule_id: null, department_id: null, vacation_days: 22 };
         setFormData(initialData);
         setSelectedClients(new Set(assignedClientIds || []));
     }, [employee, assignedClientIds]);
@@ -50,8 +50,12 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                     <input type="text" id="employee-name" name="full_name" value={formData.full_name || ''} onChange={handleChange} required disabled={isSaving} />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="employee-pin">PIN (4 dígitos)</label>
-                    <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required maxLength="4" disabled={isSaving || !!employee} />
+                    <label htmlFor="employee-email">Email</label>
+                    <input type="email" id="employee-email" name="email" value={formData.email || ''} onChange={handleChange} required disabled={isSaving || !!employee} />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="employee-pin">PIN (Contraseña)</label>
+                    <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required disabled={isSaving || !!employee} />
                 </div>
                 <div className="form-group">
                     <label htmlFor="employee-role">Rol</label>
@@ -188,8 +192,12 @@ const HREmployees = () => {
     const handleDelete = async (employeeId) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este empleado? Esta acción no se puede deshacer.')) {
             try {
-                const { error } = await supabase.from('employees').delete().eq('id', employeeId).eq('company_id', companyId);
-                if (error) throw error;
+                // This call will fail if RLS is restrictive, but the ON DELETE CASCADE in the DB
+                // should handle deleting the employee profile when the auth user is deleted.
+                const { error: authError } = await supabase.auth.admin.deleteUser(employeeId);
+                if (authError && authError.message !== 'User not found') {
+                    throw authError;
+                }
                 fetchData();
             } catch (err) {
                 setError(`Error al eliminar: ${err.message}`);
@@ -201,36 +209,59 @@ const HREmployees = () => {
         setIsSaving(true);
         setError('');
         try {
-            let avatarUrl = employeeData.avatar_url;
-            if (avatarFile) {
-                const filePath = `public/${companyId}/${Date.now()}-${avatarFile.name}`;
-                const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile);
-                if (uploadError) throw uploadError;
-                avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
-            }
-
             const { id, ...formData } = employeeData;
-            const record = {
-                ...formData,
-                avatar_url: avatarUrl,
-                schedule_id: formData.schedule_id || null,
-                department_id: formData.department_id || null,
-                vacation_days: parseInt(formData.vacation_days, 10)
-            };
-
             let savedEmployeeId = id;
 
             if (id) { // Update existing employee
-                const { error } = await supabase.from('employees').update(record).eq('id', id).eq('company_id', companyId);
+                let avatarUrl = formData.avatar_url;
+                if (avatarFile) {
+                    const filePath = `public/${companyId}/${Date.now()}-${avatarFile.name}`;
+                    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+                    if (uploadError) throw uploadError;
+                    avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
+                }
+
+                const { email, pin, role, ...updatableData } = formData;
+                const record = {
+                    ...updatableData,
+                    avatar_url: avatarUrl,
+                    schedule_id: updatableData.schedule_id || null,
+                    department_id: updatableData.department_id || null,
+                    vacation_days: parseInt(updatableData.vacation_days, 10)
+                };
+                const { error } = await supabase.from('employees').update(record).eq('id', id);
                 if (error) throw error;
-            } else { // Create new employee
-                const { data, error } = await supabase.from('employees').insert([{ ...record, company_id: companyId }]).select().single();
+            } else { // Create new employee using Edge Function
+                const { data, error } = await supabase.functions.invoke('create-employee', {
+                    body: {
+                        email: formData.email,
+                        pin: formData.pin,
+                        fullName: formData.full_name,
+                        companyId: companyId,
+                        role: formData.role
+                    },
+                });
                 if (error) throw error;
-                savedEmployeeId = data.id;
+                if (data.error) throw new Error(data.error);
+
+                // We need the new user's ID for client assignments and avatar upload
+                const { data: newUser, error: fetchError } = await supabase.from('employees').select('id, avatar_url').eq('email', formData.email).single();
+                if(fetchError) throw fetchError;
+                savedEmployeeId = newUser.id;
+
+                let avatarUrl = newUser.avatar_url;
+                if (avatarFile) {
+                     const filePath = `public/${companyId}/${Date.now()}-${avatarFile.name}`;
+                    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+                    if (uploadError) throw uploadError;
+                    avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
+                    const { error: updateError } = await supabase.from('employees').update({ avatar_url: avatarUrl }).eq('id', savedEmployeeId);
+                    if(updateError) throw updateError;
+                }
             }
 
             // Manage Client Assignments if the module is enabled
-            if (settings?.has_clients_module) {
+            if (settings?.has_clients_module && savedEmployeeId) {
                 const currentAssignments = assignments.filter(a => a.employee_id === savedEmployeeId).map(a => a.client_id);
                 const newAssignments = new Set(assignedClientIds);
 
@@ -244,7 +275,7 @@ const HREmployees = () => {
                 }
 
                 if (toRemove.length > 0) {
-                    const { error } = await supabase.from('employee_client_assignments').delete().eq('employee_id', savedEmployeeId).in('client_id', toRemove).eq('company_id', companyId);
+                    const { error } = await supabase.from('employee_client_assignments').delete().eq('employee_id', savedEmployeeId).in('client_id', toRemove);
                     if (error) throw error;
                 }
             }

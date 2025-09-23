@@ -9,19 +9,24 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
-    const [user, setUser] = useState(null); // This will be the full employee record
+    const [user, setUser] = useState(null);
     const [companyId, setCompanyId] = useState(null);
     const [settings, setSettings] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchSessionAndUserData = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            if (session?.user) {
-                await fetchUserData(session.user);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+                if (session?.user) {
+                    await fetchUserData(session.user);
+                }
+            } catch (error) {
+                console.error("Error in initial session fetch: ", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchSessionAndUserData();
@@ -29,10 +34,11 @@ export const AuthProvider = ({ children }) => {
         const { data: authListener } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 setSession(session);
+                setUser(null); // Reset user profile on auth change
                 if (session?.user) {
                     await fetchUserData(session.user);
                 } else {
-                    setUser(null);
+                    // Clear profile data on logout
                     setCompanyId(null);
                     setSettings({});
                 }
@@ -46,36 +52,18 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async (authUser) => {
         try {
-            // Step 1: Fetch the core employee data
-            const { data: employeeData, error: employeeError } = await supabase
+            const { data: employeeData, error } = await supabase
                 .from('employees')
-                .select('*')
+                .select('*, companies(*)')
                 .eq('id', authUser.id)
                 .single();
 
-            if (employeeError) throw employeeError;
+            if (error) throw error;
 
             if (employeeData) {
                 setUser(employeeData);
                 setCompanyId(employeeData.company_id);
-
-                // Step 2: Fetch the company data separately for settings
-                if (employeeData.company_id) {
-                    const { data: companyData, error: companyError } = await supabase
-                        .from('companies')
-                        .select('*')
-                        .eq('id', employeeData.company_id)
-                        .single();
-
-                    if (companyError) {
-                        console.error('Could not fetch company settings:', companyError);
-                        setSettings({}); // Default to empty settings if company fetch fails
-                    } else {
-                        setSettings(companyData || {});
-                    }
-                } else {
-                    setSettings({}); // No company associated
-                }
+                setSettings(employeeData.companies || {});
             }
         } catch (error) {
             console.error('Error fetching user data:', error.message);
@@ -85,35 +73,53 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = async (name, pin) => {
-        // The login form uses "name", but Supabase auth needs an email.
-        // We'll assume the user enters their email in the "name" field.
-        const { error } = await supabase.auth.signInWithPassword({
-            email: name,
-            password: pin,
-        });
+    const login = async (fullName, pin) => {
+        try {
+            // Step 1: Find the user by their exact full_name to get their email.
+            const { data: employee, error: findError } = await supabase
+                .from('employees')
+                .select('email')
+                .eq('full_name', fullName)
+                .single();
 
-        if (error) {
-            console.error('Error logging in:', error.message);
-            return false; // Indicate failure
+            if (findError || !employee || !employee.email) {
+                console.error('Login failed: User not found or email is missing for name -', fullName);
+                return false;
+            }
+
+            // Step 2: Attempt to sign in using the fetched email and the provided PIN.
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: employee.email,
+                password: pin,
+            });
+
+            if (signInError) {
+                console.error('Supabase sign-in error:', signInError.message);
+                return false;
+            }
+
+            // onAuthStateChange will handle fetching the user data
+            return true;
+
+        } catch (error) {
+            console.error('An unexpected error occurred during login:', error.message);
+            return false;
         }
-        // onAuthStateChange will trigger automatically, fetching user data.
-        return true; // Indicate success
     };
 
     const value = {
         session,
-        user, // The employee record
+        user,
         companyId,
         settings,
         login,
-        signOut: () => supabase.auth.signOut(),
-        loading, // Expose loading state
+        logout: () => supabase.auth.signOut(),
+        loading,
     };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
