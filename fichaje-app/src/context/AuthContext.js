@@ -72,7 +72,8 @@ export const AuthProvider = ({ children }) => {
                 setSettings(employeeData.companies || {});
                 console.log("User profile and settings have been set in context.");
             } else {
-                console.warn("No employee data found for auth user:", authUser.id);
+                console.error("CRITICAL: No employee profile found for authenticated user:", authUser.id, ". Forcing logout.");
+                await supabase.auth.signOut();
             }
         } catch (error) {
             console.error('Error in fetchUserData catch block:', error.message);
@@ -82,37 +83,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = async (fullName, pin) => {
+    const login = async (email, password) => {
         try {
-            // Step 1: Find the user by their exact full_name to get their email.
-            const { data: employee, error: findError } = await supabase
-                .from('employees')
-                .select('email')
-                .eq('full_name', fullName)
-                .single();
-
-            if (findError || !employee || !employee.email) {
-                console.error('Login failed: User not found or email is missing for name -', fullName);
-                return false;
-            }
-
-            // Step 2: Attempt to sign in using the fetched email and the provided PIN.
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-                email: employee.email,
-                password: pin,
+            const { error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
             });
 
-            if (signInError) {
-                console.error('Supabase sign-in error:', signInError.message);
-                return false;
+            if (error) {
+                console.error('Supabase sign-in error:', error.message);
+                return { success: false, error: error.message };
             }
 
             // onAuthStateChange will handle fetching the user data
-            return true;
+            return { success: true };
 
         } catch (error) {
             console.error('An unexpected error occurred during login:', error.message);
-            return false;
+            return { success: false, error: 'An unexpected error occurred.' };
         }
     };
 
