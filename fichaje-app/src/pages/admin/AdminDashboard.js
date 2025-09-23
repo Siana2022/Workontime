@@ -150,7 +150,7 @@ const AdminDashboard = () => {
         setError('');
         try {
             const { data, error } = await supabase.functions.invoke('create-employee', {
-                body: { email, pin, fullName, companyId, role: 'Gestor de RRHH' },
+                body: { email, password: pin, fullName, companyId, role: 'Gestor de RRHH' },
             });
 
             if (error) throw error;
