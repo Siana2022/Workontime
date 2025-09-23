@@ -9,7 +9,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, pin, fullName, companyId, role } = await req.json()
+    const { email, password, fullName, companyId, role } = await req.json()
 
     // Create a Supabase client with the Service Role Key
     const supabaseAdmin = createClient(
@@ -20,7 +20,7 @@ serve(async (req) => {
     // Create the user in the auth schema
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
-      password: pin,
+      password: password,
       email_confirm: true, // Auto-confirm the email, as we are creating users directly.
     });
 
@@ -33,7 +33,6 @@ serve(async (req) => {
       id: newUserId,
       full_name: fullName,
       email: email,
-      pin: pin,
       role: role || 'Empleado', // Default to 'Empleado' if role is not provided
       company_id: companyId,
     });
