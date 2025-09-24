@@ -5,10 +5,11 @@ import './Requests.css';
 
 const Requests = () => {
     const { user } = useAuth();
-    const [requestType, setRequestType] = useState('Vacaciones');
+    const [requestType, setRequestType] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [comments, setComments] = useState('');
+    const [attachment, setAttachment] = useState(null);
 
     const [pastRequests, setPastRequests] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -45,6 +46,30 @@ const Requests = () => {
         setError('');
         setSuccess('');
 
+        let attachmentUrl = null;
+
+        // Handle file upload if it's a medical leave and a file is provided
+        if (requestType === 'Baja Médica' && attachment) {
+            const fileExt = attachment.name.split('.').pop();
+            const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+            const filePath = `justificantes/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('justificantes')
+                .upload(filePath, attachment);
+
+            if (uploadError) {
+                setError('Error al subir el justificante. Por favor, inténtalo de nuevo.');
+                console.error('Error uploading file:', uploadError);
+                setLoading(false);
+                return;
+            }
+
+            // Get public URL
+            const { data } = supabase.storage.from('justificantes').getPublicUrl(filePath);
+            attachmentUrl = data.publicUrl;
+        }
+
         const newRequest = {
             employee_id: user.id,
             employee_name: user.name,
@@ -53,6 +78,7 @@ const Requests = () => {
             end_date: endDate,
             comments: comments,
             status: 'Pendiente',
+            attachment_url: attachmentUrl,
         };
 
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
@@ -63,10 +89,12 @@ const Requests = () => {
         } else {
             setSuccess('¡Solicitud enviada con éxito!');
             // Reset form
-            setRequestType('Vacaciones');
+            setRequestType('');
             setStartDate('');
             setEndDate('');
             setComments('');
+            setAttachment(null);
+            document.getElementById('attachment')?.form.reset(); // Reset file input
             // Refresh list
             fetchRequests();
         }
@@ -82,13 +110,24 @@ const Requests = () => {
                     {error && <p className="error-message">{error}</p>}
                     {success && <p className="success-message">{success}</p>}
                     <div className="form-group">
-                        <label htmlFor="request-type">Tipo de Ausencia</label>
-                        <select id="request-type" value={requestType} onChange={(e) => setRequestType(e.target.value)} disabled={loading}>
+                        <label htmlFor="request-type">Tipo de Solicitud</label>
+                        <select id="request-type" value={requestType} onChange={(e) => setRequestType(e.target.value)} required disabled={loading}>
+                            <option value="" disabled>Selecciona un tipo</option>
                             <option>Vacaciones</option>
                             <option>Asunto Personal</option>
                             <option>Baja Médica</option>
+                            <option>Error en el fichaje</option>
+                            <option>Solicitud cambio de horario</option>
                         </select>
                     </div>
+
+                    {requestType === 'Baja Médica' && (
+                        <div className="form-group">
+                            <label htmlFor="attachment">Adjuntar Justificante</label>
+                            <input type="file" id="attachment" onChange={(e) => setAttachment(e.target.files[0])} disabled={loading} />
+                        </div>
+                    )}
+
                     <div className="form-group">
                         <label htmlFor="start-date">Fecha de Inicio</label>
                         <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={loading} />
@@ -116,6 +155,7 @@ const Requests = () => {
                             <th>Inicio</th>
                             <th>Fin</th>
                             <th>Estado</th>
+                            <th>Justificante</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,10 +166,17 @@ const Requests = () => {
                                     <td>{req.start_date}</td>
                                     <td>{req.end_date}</td>
                                     <td><span className={`status status-${req.status.toLowerCase()}`}>{req.status}</span></td>
+                                    <td>
+                                        {req.attachment_url ? (
+                                            <a href={req.attachment_url} target="_blank" rel="noopener noreferrer">Ver</a>
+                                        ) : (
+                                            'N/A'
+                                        )}
+                                    </td>
                                 </tr>
                             ))
                         ) : (
-                            <tr><td colSpan="4">No has enviado ninguna solicitud todavía.</td></tr>
+                            <tr><td colSpan="5">No has enviado ninguna solicitud todavía.</td></tr>
                         )}
                     </tbody>
                 </table>

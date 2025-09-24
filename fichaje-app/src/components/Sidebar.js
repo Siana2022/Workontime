@@ -32,6 +32,7 @@ const Sidebar = () => {
                         <li><NavLink className={getNavLinkClass} to="/dashboard">Escritorio</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/history">Historial</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/requests">Solicitudes</NavLink></li>
+                        <li><NavLink className={getNavLinkClass} to="/my-calendar">Mi Calendario</NavLink></li>
                     </>
                 )}
 
