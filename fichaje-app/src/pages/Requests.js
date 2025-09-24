@@ -11,6 +11,11 @@ const Requests = () => {
     const [comments, setComments] = useState('');
     const [attachment, setAttachment] = useState(null);
 
+    // New state for clock-in error fields
+    const [errorDate, setErrorDate] = useState('');
+    const [actualTime, setActualTime] = useState('');
+    const [clockedTime, setClockedTime] = useState('');
+
     const [pastRequests, setPastRequests] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -38,10 +43,21 @@ const Requests = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!startDate || !endDate) {
+
+        let requestStartDate = startDate;
+        let requestEndDate = endDate;
+        let requestComments = comments;
+
+        if (requestType === 'Error en el fichaje') {
+            if (!errorDate || !actualTime || !clockedTime) {
+                setError('Para un error de fichaje, todos los campos de fecha y hora son obligatorios.');
+                return;
+            }
+        } else if (!startDate || !endDate) {
             setError('Las fechas de inicio y fin son obligatorias.');
             return;
         }
+
         setLoading(true);
         setError('');
         setSuccess('');
@@ -70,16 +86,29 @@ const Requests = () => {
             attachmentUrl = data.publicUrl;
         }
 
-        const newRequest = {
+        const newRequestBase = {
             employee_id: user.id,
             employee_name: user.name,
             request_type: requestType,
-            start_date: startDate,
-            end_date: endDate,
             comments: comments,
             status: 'Pendiente',
             attachment_url: attachmentUrl,
         };
+
+        const newRequest = requestType === 'Error en el fichaje'
+            ? {
+                ...newRequestBase,
+                start_date: errorDate,
+                end_date: errorDate,
+                fecha_solicitud: errorDate,
+                hora_entrada_real: actualTime,
+                hora_entrada_fichada: clockedTime
+            }
+            : {
+                ...newRequestBase,
+                start_date: startDate,
+                end_date: endDate,
+            };
 
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
 
@@ -94,7 +123,11 @@ const Requests = () => {
             setEndDate('');
             setComments('');
             setAttachment(null);
-            document.getElementById('attachment')?.form.reset(); // Reset file input
+            setErrorDate('');
+            setActualTime('');
+            setClockedTime('');
+            const attachmentInput = document.getElementById('attachment');
+            if (attachmentInput) attachmentInput.value = '';
             // Refresh list
             fetchRequests();
         }
@@ -128,16 +161,36 @@ const Requests = () => {
                         </div>
                     )}
 
+                    {requestType === 'Error en el fichaje' ? (
+                        <>
+                            <div className="form-group">
+                                <label htmlFor="error-date">Fecha del Error</label>
+                                <input type="date" id="error-date" value={errorDate} onChange={(e) => setErrorDate(e.target.value)} required disabled={loading} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="actual-time">Hora de Entrada Real</label>
+                                <input type="time" id="actual-time" value={actualTime} onChange={(e) => setActualTime(e.target.value)} required disabled={loading} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="clocked-time">Hora de Entrada Fichada</label>
+                                <input type="time" id="clocked-time" value={clockedTime} onChange={(e) => setClockedTime(e.target.value)} required disabled={loading} />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="form-group">
+                                <label htmlFor="start-date">Fecha de Inicio</label>
+                                <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={loading} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="end-date">Fecha de Fin</label>
+                                <input type="date" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={loading} />
+                            </div>
+                        </>
+                    )}
+
                     <div className="form-group">
-                        <label htmlFor="start-date">Fecha de Inicio</label>
-                        <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={loading} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="end-date">Fecha de Fin</label>
-                        <input type="date" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={loading} />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="comments">Comentarios</label>
+                        <label htmlFor="comments">Comentarios Adicionales</label>
                         <textarea id="comments" value={comments} onChange={(e) => setComments(e.target.value)} rows="4" disabled={loading}></textarea>
                     </div>
                     <button type="submit" className="submit-btn" disabled={loading}>
