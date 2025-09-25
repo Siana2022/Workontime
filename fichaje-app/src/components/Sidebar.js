@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     const auth = useAuth();
 
     const handleLogout = () => {
@@ -18,9 +18,10 @@ const Sidebar = () => {
     const getNavLinkClass = ({ isActive }) => isActive ? 'sidebar-link active-link' : 'sidebar-link';
 
     return (
-        <div className="sidebar">
+        <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <img src="https://i.postimg.cc/nZvJGfq9/WORKONTIME-21.png" alt="Logo" className="sidebar-logo" />
+                <button className="sidebar-close-btn" onClick={toggleSidebar}>&times;</button>
             </div>
             <ul className="sidebar-menu">
                 {user?.role === 'Empleado' && (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
@@ -27,22 +27,25 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
 
-const AppLayout = () => {
-    const { user, logout } = useAuth();
+const AppLayout = ({ isSidebarOpen, toggleSidebar }) => {
+    const { user } = useAuth();
     if (!user) {
         return <div className="loading-container">Verificando usuario...</div>;
     }
     return (
-        <div className="App">
-            <Sidebar />
+        <div className={`App ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+            <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
             <main className="main-content">
+                <button className="sidebar-toggle" onClick={toggleSidebar}>
+                    &#9776;
+                </button>
                 <Outlet />
             </main>
         </div>
     );
 };
 
-const AppRoutes = () => {
+const AppRoutes = ({ isSidebarOpen, toggleSidebar }) => {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -55,7 +58,7 @@ const AppRoutes = () => {
             <Route path="/kiosk" element={<Kiosk />} />
 
             <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<AppLayout />}>
+                <Route path="/" element={<AppLayout isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />}>
                     <Route index element={
                         user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
                         user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
@@ -100,11 +103,14 @@ const AppRoutes = () => {
 };
 
 function App() {
-  return (
-    <Router>
-      <AppRoutes />
-    </Router>
-  );
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+
+    return (
+        <Router>
+            <AppRoutes isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        </Router>
+    );
 }
 
 export default App;
