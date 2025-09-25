@@ -3,13 +3,12 @@
     text-align: center;
 }
 
-/* Re-using the header style from other pages */
 .dashboard-container h1 {
     background-color: #04003B;
     color: #ffffff;
     padding: 20px;
-    margin: 0 0 10px 0;
-    border-radius: 8px;
+    margin: -20px -20px 10px -20px;
+    border-radius: 8px 8px 0 0;
 }
 
 .dashboard-container h2 {
@@ -76,6 +75,9 @@
     background-color: #ffc107; /* Yellow */
     color: #333;
 }
+.resume {
+    background-color: #007bff; /* Blue */
+}
 .clock-out {
     background-color: #dc3545; /* Red */
 }
@@ -90,12 +92,10 @@
     display: inline-block;
 }
 
-/* Summary Stats Section */
 .dashboard-section.summary-stats {
     margin-top: 20px;
     padding: 15px;
     background-color: #f9f9f9;
-    border-radius: 8px;
     border: 1px solid #e0e0e0;
     max-width: 900px;
     margin-left: auto;
@@ -149,7 +149,6 @@
     margin-left: 5px;
 }
 
-/* Status Indicator */
 .status-indicator-container {
     display: flex;
     justify-content: center;
@@ -163,16 +162,16 @@
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    background-color: #6c757d; /* Grey for logged out */
+    background-color: #6c757d;
 }
 
 .status-dot.status-trabajando {
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
     animation: pulse 2s infinite;
 }
 
 .status-dot.status-en-pausa {
-    background-color: #ffc107; /* Yellow */
+    background-color: #ffc107;
 }
 
 @keyframes pulse {
@@ -184,5 +183,35 @@
     }
     100% {
         box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .dashboard-container h1 {
+        font-size: 1.5em;
+        padding: 15px;
+        margin: -20px -20px 15px -20px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 100%;
+        max-width: 300px;
+        font-size: 1.1em;
+        padding: 12px 20px;
+    }
+
+    .current-time {
+        font-size: 2em;
     }
 }

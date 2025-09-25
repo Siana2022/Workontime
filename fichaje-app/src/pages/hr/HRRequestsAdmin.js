@@ -43,6 +43,9 @@ const HRRequestsAdmin = () => {
 
     const handleUpdateRequest = async (requestId, newStatus) => {
         const originalRequests = [...requests];
+        const requestToUpdate = requests.find(req => req.id === requestId);
+
+        if (!requestToUpdate) return;
 
         // Optimistically update UI
         const updatedRequests = requests.map(req =>
@@ -50,6 +53,61 @@ const HRRequestsAdmin = () => {
         );
         setRequests(updatedRequests.filter(req => newStatus === 'Pendiente' || req.id !== requestId));
 
+        // If approving a clock-in error, also create an incident
+        if (newStatus === 'Aprobada' && requestToUpdate.request_type === 'Error en el fichaje') {
+            try {
+                const description = `Error de fichaje. Hora real: ${requestToUpdate.hora_entrada_real}, Hora fichada: ${requestToUpdate.hora_entrada_fichada}. Notas: ${requestToUpdate.comments || 'N/A'}`;
+
+                // Resiliently get or create the incident type ID
+                let incidentTypeId;
+                const typeName = 'Error en el fichaje';
+
+                const { data: typeData, error: typeError } = await supabase
+                    .from('incident_types')
+                    .select('id')
+                    .eq('name', typeName)
+                    .eq('company_id', companyId)
+                    .single();
+
+                if (typeError && typeError.code !== 'PGRST116') { // PGRST116 is 'exact one row not found'
+                    throw typeError;
+                }
+
+                if (typeData) {
+                    incidentTypeId = typeData.id;
+                } else {
+                    // If not found, create it
+                    const { data: newTypeData, error: newTypeError } = await supabase
+                        .from('incident_types')
+                        .insert({ name: typeName, description: 'Generado automáticamente por el sistema.', company_id: companyId })
+                        .select('id')
+                        .single();
+
+                    if (newTypeError) {
+                        throw new Error(`No se pudo crear el tipo de incidencia necesario: ${newTypeError.message}`);
+                    }
+                    incidentTypeId = newTypeData.id;
+                }
+
+                const newIncident = {
+                    employee_id: requestToUpdate.employee_id,
+                    company_id: companyId,
+                    incident_type_id: incidentTypeId,
+                    date: requestToUpdate.start_date,
+                    description: description,
+                    status: 'Cerrada'
+                };
+
+                const { error: incidentError } = await supabase.from('incidents').insert([newIncident]);
+                if (incidentError) throw incidentError;
+
+            } catch (err) {
+                console.error('Error creating incident from request:', err);
+                alert(`Error al crear la incidencia: ${err.message}`);
+                setRequests(originalRequests);
+                return;
+            }
+        }
 
         const { error: updateError } = await supabase
             .from('requests')
@@ -63,11 +121,9 @@ const HRRequestsAdmin = () => {
             setRequests(originalRequests);
             fetchRequests();
         } else {
-             // If filter is not 'Todas', remove the processed item from the view
              if (filter !== 'Todas') {
                 setRequests(currentRequests => currentRequests.filter(req => req.id !== requestId));
             } else {
-                // Otherwise, just refetch to show the updated status
                 fetchRequests();
             }
         }
