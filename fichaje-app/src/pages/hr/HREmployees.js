@@ -209,7 +209,8 @@ const HREmployees = () => {
                 avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
             }
 
-            const { id, ...formData } = employeeData;
+            // Desestructuramos para quitar los campos computados que no existen en la tabla 'employees'
+            const { id, schedule, department, assigned_clients, ...formData } = employeeData;
             const record = {
                 ...formData,
                 avatar_url: avatarUrl,

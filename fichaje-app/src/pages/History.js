@@ -32,40 +32,59 @@ const formatBalance = (hours) => {
 const processTimeEntries = (entries, schedule) => {
     if (!entries || entries.length === 0) return [];
 
-    const groupedByDate = entries.reduce((acc, entry) => {
-        const dateKey = new Date(entry.created_at).toISOString().split('T')[0];
-        if (!acc[dateKey]) {
-            acc[dateKey] = [];
+    const sortedEntries = entries.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    const shifts = [];
+    let i = 0;
+    while (i < sortedEntries.length) {
+        const currentEntry = sortedEntries[i];
+        const nextEntry = sortedEntries[i + 1];
+
+        let shift = {};
+
+        if (currentEntry.action === 'Entrada') {
+            if (nextEntry && nextEntry.action === 'Salida') {
+                shift = { clockInEntry: currentEntry, clockOutEntry: nextEntry };
+                i += 2;
+            } else {
+                shift = { clockInEntry: currentEntry, clockOutEntry: null };
+                i += 1;
+            }
+        } else {
+            shift = { clockInEntry: null, clockOutEntry: currentEntry };
+            i += 1;
         }
-        acc[dateKey].push(entry);
-        return acc;
-    }, {});
 
-    return Object.entries(groupedByDate).map(([dateKey, dailyEntries]) => {
-        dailyEntries.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const { clockInEntry, clockOutEntry } = shift;
+        const referenceEntry = clockInEntry || clockOutEntry;
+        if (!referenceEntry) continue;
 
-        const date = new Date(dateKey + 'T12:00:00Z'); // Use midday to avoid timezone issues
+        const date = new Date(referenceEntry.created_at);
         const displayDate = date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
-        const clockInEntry = dailyEntries.find(e => e.action === 'Entrada');
-        const clockOutEntries = dailyEntries.filter(e => e.action === 'Salida');
-        const clockOutEntry = clockOutEntries[clockOutEntries.length - 1];
+        const shiftEntriesForCalc = [];
+        if (clockInEntry) shiftEntriesForCalc.push(clockInEntry);
+        if (clockOutEntry) shiftEntriesForCalc.push(clockOutEntry);
 
-        const actualHours = calculateActualWorkedHours(dailyEntries);
+        const actualHours = calculateActualWorkedHours(shiftEntriesForCalc);
         const theoreticalHours = getTheoreticalHoursForDay(schedule, date);
-
         const balance = (theoreticalHours > 0 || actualHours > 0) ? actualHours - theoreticalHours : 0;
+        const sourceType = clockInEntry?.source || clockOutEntry?.source || '';
 
-        return {
-            id: dateKey,
+        shifts.push({
+            id: `${clockInEntry?.id || 'in'}-${clockOutEntry?.id || 'out'}`,
             date: displayDate,
             clockIn: clockInEntry ? formatTime(clockInEntry.created_at) : '---',
             clockOut: clockOutEntry ? formatTime(clockOutEntry.created_at) : '---',
             total: formatDuration(actualHours),
             balance: theoreticalHours > 0 ? formatBalance(balance) : 'N/A',
             balanceHours: balance,
-        };
-    }).sort((a, b) => new Date(b.id) - new Date(a.id));
+            source: sourceType,
+            sortDate: date,
+        });
+    }
+
+    return shifts.sort((a, b) => b.sortDate - a.sortDate);
 };
 
 
@@ -133,6 +152,7 @@ const History = () => {
                         <th>Salida</th>
                         <th>Total Horas</th>
                         <th>Balance</th>
+                        <th>Tipo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,10 +165,11 @@ const History = () => {
                             <td className={record.balanceHours > 0.01 ? 'positive-balance' : record.balanceHours < -0.01 ? 'negative-balance' : ''}>
                                 {record.balance}
                             </td>
+                            <td>{record.source}</td>
                         </tr>
                     )) : (
                         <tr>
-                            <td colSpan="5">No hay registros de fichajes.</td>
+                            <td colSpan="6">No hay registros de fichajes.</td>
                         </tr>
                     )}
                 </tbody>
