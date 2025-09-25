@@ -93,9 +93,5 @@ export const calculateActualWorkedHours = (timeEntries) => {
         }
     }
 
-    // If the employee is still clocked in at the end of the day (e.g., forgot to clock out),
-    // this implementation does not count the remaining time, which is the correct behavior
-    // for calculating completed work periods.
-
     return totalMillis / (1000 * 60 * 60);
 };

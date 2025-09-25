@@ -4,11 +4,15 @@
 }
 
 .hr-reports-container h1 {
-    background-color: #04003B;
-    color: #ffffff;
-    padding: 20px;
-    margin: -20px -20px 30px -20px;
-    border-radius: 8px;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+.hr-reports-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
 }
 
 .filters-container {
@@ -45,17 +49,17 @@
 .apply-filters-btn {
     padding: 10px 20px;
     border: none;
-    background-color: #04003B;
+    background-color: #007bff;
     color: white;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
-    height: fit-content; /* Align button nicely with inputs */
+    height: fit-content;
 }
 
 .apply-filters-btn:hover {
-    background-color: #1c2a5e;
+    background-color: #0056b3;
 }
 
 .apply-filters-btn:disabled {
@@ -64,21 +68,17 @@
 }
 
 .report-section {
-    margin-top: 40px;
-}
-
-.report-section h2 {
-    font-size: 1.5em;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 5px;
+    margin-bottom: 40px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .report-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .report-table th,

@@ -49,7 +49,6 @@ const HRReports = () => {
     };
 
     const calculateHoursSummary = (entries) => {
-        // This is a complex calculation, let's use our robust one instead
         const summary = {};
         const entriesByEmployee = entries.reduce((acc, entry) => {
             if (!acc[entry.employee_id]) acc[entry.employee_id] = [];
@@ -152,7 +151,7 @@ const HRReports = () => {
                     const date = new Date(year, month - 1, day);
                     const dateKey = date.toISOString().split('T')[0];
                     const dailyEntries = entriesByDay[dateKey] || [];
-                    const actualHours = calculateActualWorkedHours(dailyEntries);
+                    const actualHours = calculateActualWorkedHours(dailyEntries.sort((a,b) => new Date(a.created_at) - new Date(b.created_at)));
                     const theoreticalHours = getTheoreticalHoursForDay(emp.schedules, date);
                     if (theoreticalHours > 0 || actualHours > 0) {
                         totalBalance += actualHours - theoreticalHours;

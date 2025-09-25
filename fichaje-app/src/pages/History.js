@@ -54,7 +54,6 @@ const processTimeEntries = (entries, schedule) => {
         const actualHours = calculateActualWorkedHours(dailyEntries);
         const theoreticalHours = getTheoreticalHoursForDay(schedule, date);
 
-        // Calculate balance only if there were theoretical hours or actual work done
         const balance = (theoreticalHours > 0 || actualHours > 0) ? actualHours - theoreticalHours : 0;
 
         return {
@@ -66,7 +65,7 @@ const processTimeEntries = (entries, schedule) => {
             balance: theoreticalHours > 0 ? formatBalance(balance) : 'N/A',
             balanceHours: balance,
         };
-    }).sort((a, b) => new Date(b.id) - new Date(a.id)); // Sort final results by date descending
+    }).sort((a, b) => new Date(b.id) - new Date(a.id));
 };
 
 
