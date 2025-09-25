@@ -80,30 +80,29 @@ const Requests = () => {
             attachmentUrl = data.publicUrl;
         }
 
-        const newRequestBase = {
+        const newRequest = {
             employee_id: user.id,
             company_id: companyId,
             employee_name: user.full_name,
             request_type: requestType,
             comments: comments,
             status: 'Pendiente',
-            attachment_url: attachmentUrl,
         };
 
-        const newRequest = requestType === 'Error en el fichaje'
-            ? {
-                ...newRequestBase,
-                start_date: errorDate,
-                end_date: errorDate,
-                fecha_solicitud: errorDate,
-                hora_entrada_real: actualTime,
-                hora_entrada_fichada: clockedTime
-            }
-            : {
-                ...newRequestBase,
-                start_date: startDate,
-                end_date: endDate,
-            };
+        if (attachmentUrl) {
+            newRequest.attachment_url = attachmentUrl;
+        }
+
+        if (requestType === 'Error en el fichaje') {
+            newRequest.start_date = errorDate;
+            newRequest.end_date = errorDate;
+            newRequest.fecha_solicitud = errorDate;
+            newRequest.hora_entrada_real = actualTime;
+            newRequest.hora_entrada_fichada = clockedTime;
+        } else {
+            newRequest.start_date = startDate;
+            newRequest.end_date = endDate;
+        }
 
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
 
