@@ -181,6 +181,71 @@ const HRReports = () => {
         return `${sign}${h}h ${m}m`;
     };
 
+    const handleExportBalance = () => {
+        if (monthlyBalanceData.length === 0) return;
+
+        const headers = ['Empleado', 'Balance de Horas (formato hh:mm)', 'Balance de Horas (decimal)'];
+        const data = monthlyBalanceData.map(item => [
+            `"${item.employee_name.replace(/"/g, '""')}"`,
+            `"${formatBalance(item.balance)}"`,
+            item.balance.toFixed(2)
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...data.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `balance_mensual_${month}_${year}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleExportRange = () => {
+        if (summaryData.length === 0 && timeEntries.length === 0) return;
+
+        let csvContent = '';
+
+        if (summaryData.length > 0) {
+            csvContent += 'Resumen de Horas por Filtro\n';
+            const headers = ['Empleado', 'Horas Totales Trabajadas'];
+            const rows = summaryData.map(item => [
+                `"${item.employee_name.replace(/"/g, '""')}"`,
+                item.totalHours.toFixed(2)
+            ]);
+            csvContent += headers.join(',') + '\n';
+            csvContent += rows.map(row => row.join(',')).join('\n');
+        }
+
+        if (timeEntries.length > 0) {
+            if (csvContent.length > 0) csvContent += '\n\n';
+            csvContent += 'Fichajes Detallados\n';
+            const headers = ['Fecha y Hora', 'Empleado', 'Acción', 'Cliente'];
+            const rows = timeEntries.map(item => [
+                `"${new Date(item.created_at).toLocaleString('es-ES')}"`,
+                `"${item.employee_name.replace(/"/g, '""')}"`,
+                `"${item.action}"`,
+                `"${(item.client_name || 'N/A').replace(/"/g, '""')}"`
+            ]);
+            csvContent += headers.join(',') + '\n';
+            csvContent += rows.map(row => row.join(',')).join('\n');
+        }
+
+        const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'informe_por_rango.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="hr-reports-container">
             <h1>Informes Personalizados</h1>
@@ -204,6 +269,9 @@ const HRReports = () => {
                     </div>
                     <button onClick={generateMonthlyBalanceReport} className="apply-filters-btn" disabled={loadingBalance}>
                         {loadingBalance ? 'Generando...' : 'Generar Balance'}
+                    </button>
+                    <button onClick={handleExportBalance} className="export-btn" disabled={monthlyBalanceData.length === 0}>
+                        Exportar a CSV
                     </button>
                 </div>
                 <div className="table-container">
@@ -256,6 +324,9 @@ const HRReports = () => {
                     </div>
                     <button onClick={fetchReportData} className="apply-filters-btn" disabled={loading}>
                         {loading ? 'Cargando...' : 'Aplicar Filtros'}
+                    </button>
+                    <button onClick={handleExportRange} className="export-btn" disabled={summaryData.length === 0 && timeEntries.length === 0}>
+                        Exportar a CSV
                     </button>
                 </div>
 
