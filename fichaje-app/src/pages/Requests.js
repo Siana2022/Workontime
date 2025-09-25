@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import './Requests.css';
 
 const Requests = () => {
-    const { user } = useAuth();
+    const { user, companyId } = useAuth();
     const [requestType, setRequestType] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -44,16 +44,12 @@ const Requests = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        let requestStartDate = startDate;
-        let requestEndDate = endDate;
-        let requestComments = comments;
-
         if (requestType === 'Error en el fichaje') {
             if (!errorDate || !actualTime || !clockedTime) {
                 setError('Para un error de fichaje, todos los campos de fecha y hora son obligatorios.');
                 return;
             }
-        } else if (!startDate || !endDate) {
+        } else if (requestType !== '' && (!startDate || !endDate)) {
             setError('Las fechas de inicio y fin son obligatorias.');
             return;
         }
@@ -64,7 +60,6 @@ const Requests = () => {
 
         let attachmentUrl = null;
 
-        // Handle file upload if it's a medical leave and a file is provided
         if (requestType === 'Baja Médica' && attachment) {
             const fileExt = attachment.name.split('.').pop();
             const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -81,13 +76,13 @@ const Requests = () => {
                 return;
             }
 
-            // Get public URL
             const { data } = supabase.storage.from('justificantes').getPublicUrl(filePath);
             attachmentUrl = data.publicUrl;
         }
 
         const newRequestBase = {
             employee_id: user.id,
+            company_id: companyId,
             employee_name: user.name,
             request_type: requestType,
             comments: comments,
@@ -117,7 +112,6 @@ const Requests = () => {
             console.error('Error inserting request:', insertError);
         } else {
             setSuccess('¡Solicitud enviada con éxito!');
-            // Reset form
             setRequestType('');
             setStartDate('');
             setEndDate('');
@@ -128,7 +122,6 @@ const Requests = () => {
             setClockedTime('');
             const attachmentInput = document.getElementById('attachment');
             if (attachmentInput) attachmentInput.value = '';
-            // Refresh list
             fetchRequests();
         }
         setLoading(false);
