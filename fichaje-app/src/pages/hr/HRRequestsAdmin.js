@@ -56,10 +56,8 @@ const HRRequestsAdmin = () => {
         // If approving a clock-in error, also create an incident
         if (newStatus === 'Aprobada' && requestToUpdate.request_type === 'Error en el fichaje') {
             try {
-                // Data is now in specific columns, not in a JSON string
                 const description = `Error de fichaje. Hora real: ${requestToUpdate.hora_entrada_real}, Hora fichada: ${requestToUpdate.hora_entrada_fichada}. Notas: ${requestToUpdate.comments || 'N/A'}`;
 
-                // First, get the ID for the 'Error en el fichaje' incident type
                 const { data: typeData, error: typeError } = await supabase
                     .from('incident_types')
                     .select('id')
@@ -77,7 +75,7 @@ const HRRequestsAdmin = () => {
                     incident_type_id: typeData.id,
                     date: requestToUpdate.start_date,
                     description: description,
-                    status: 'Cerrada' // Mark as closed since it's an acknowledged error
+                    status: 'Cerrada'
                 };
 
                 const { error: incidentError } = await supabase.from('incidents').insert([newIncident]);
@@ -86,7 +84,6 @@ const HRRequestsAdmin = () => {
             } catch (err) {
                 console.error('Error creating incident from request:', err);
                 alert(`Error al crear la incidencia: ${err.message}`);
-                // Revert optimistic update and stop processing
                 setRequests(originalRequests);
                 return;
             }
@@ -104,11 +101,9 @@ const HRRequestsAdmin = () => {
             setRequests(originalRequests);
             fetchRequests();
         } else {
-             // If filter is not 'Todas', remove the processed item from the view
              if (filter !== 'Todas') {
                 setRequests(currentRequests => currentRequests.filter(req => req.id !== requestId));
             } else {
-                // Otherwise, just refetch to show the updated status
                 fetchRequests();
             }
         }

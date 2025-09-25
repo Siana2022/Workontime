@@ -11,7 +11,7 @@ const Requests = () => {
     const [comments, setComments] = useState('');
     const [attachment, setAttachment] = useState(null);
 
-    // New state for clock-in error fields
+    // State for clock-in error fields
     const [errorDate, setErrorDate] = useState('');
     const [actualTime, setActualTime] = useState('');
     const [clockedTime, setClockedTime] = useState('');
@@ -83,7 +83,7 @@ const Requests = () => {
         const newRequestBase = {
             employee_id: user.id,
             company_id: companyId,
-            full_name: user.full_name, // Corrected from employee_name
+            employee_name: user.full_name,
             request_type: requestType,
             comments: comments,
             status: 'Pendiente',

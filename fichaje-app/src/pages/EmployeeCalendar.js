@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { generateMonthGrid } from '../utils/calendar';
-import './EmployeeCalendar.css'; // We will create this file next
+import './EmployeeCalendar.css';
 
 const EmployeeCalendar = () => {
     const { user, companyId } = useAuth();
@@ -21,7 +21,6 @@ const EmployeeCalendar = () => {
             setLoading(true);
             setError(null);
             try {
-                // Fetch approved requests for the current employee
                 const { data: requestsData, error: requestsError } = await supabase
                     .from('requests')
                     .select('start_date, end_date, request_type')
@@ -31,7 +30,6 @@ const EmployeeCalendar = () => {
 
                 if (requestsError) throw requestsError;
 
-                // Fetch company-wide holidays
                 const { data: holidaysData, error: holidaysError } = await supabase
                     .from('holidays')
                     .select('name, date')
