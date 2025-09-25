@@ -83,7 +83,7 @@ const Requests = () => {
         const newRequestBase = {
             employee_id: user.id,
             company_id: companyId,
-            employee_name: user.name,
+            employee_name: user.full_name,
             request_type: requestType,
             comments: comments,
             status: 'Pendiente',
