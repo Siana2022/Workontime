@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-// import { calculateActualWorkedHours } from '../utils/hours'; // Temporarily disabled for debugging
+import { calculateActualWorkedHours } from '../utils/hours';
 import './EmployeeDashboard.css';
 
 // Helper to format decimal hours into Hh Mm format
@@ -143,9 +143,30 @@ const EmployeeDashboard = () => {
             const { error: insertError } = await supabase.from('time_entries').insert([entry]);
             if (insertError) throw insertError;
 
-            if (actionType === 'Entrada' || actionType === 'Reanudar') setClockingStatus('Trabajando');
-            else if (actionType === 'Pausa') setClockingStatus('En Pausa');
-            else if (actionType === 'Salida') setClockingStatus('Fuera de servicio');
+            // Refetch today's entries to update status and worked time
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const { data: todayEntries, error: entriesError } = await supabase
+                .from('time_entries')
+                .select('*')
+                .eq('employee_id', user.id)
+                .eq('company_id', companyId)
+                .gte('created_at', today.toISOString())
+                .order('created_at', { ascending: true });
+
+            if (entriesError) {
+                console.error("Error refetching today's entries:", entriesError);
+            } else if (todayEntries && todayEntries.length > 0) {
+                const lastAction = todayEntries[todayEntries.length - 1].action;
+                if (lastAction === 'Entrada' || lastAction === 'Reanudar') setClockingStatus('Trabajando');
+                else if (lastAction === 'Pausa') setClockingStatus('En Pausa');
+                else setClockingStatus('Fuera de servicio');
+                const workedHours = calculateActualWorkedHours(todayEntries);
+                setTimeWorkedToday(workedHours);
+            } else {
+                setClockingStatus('Fuera de servicio');
+                setTimeWorkedToday(0);
+            }
 
             setLastClocking({ type: actionType, time: new Date(), client: entry.client_name });
         } catch (err) {
