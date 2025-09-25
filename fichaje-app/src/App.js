@@ -6,6 +6,22 @@ import Kiosk from './pages/Kiosk';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import History from './pages/History';
 import Requests from './pages/Requests';
+import EmployeeCalendar from './pages/EmployeeCalendar';
+import HRDashboard from './pages/hr/HRDashboard';
+import HREmployees from './pages/hr/HREmployees';
+import HRDepartments from './pages/hr/HRDepartments';
+import HRAbsenceTypes from './pages/hr/HRAbsenceTypes';
+import HRIncidentTypes from './pages/hr/HRIncidentTypes';
+import HRAbsences from './pages/hr/HRAbsences';
+import HRIncidents from './pages/hr/HRIncidents';
+import HRGlobalCalendar from './pages/hr/HRGlobalCalendar';
+import HRHolidays from './pages/hr/HRHolidays';
+import HRScheduleTypes from './pages/hr/HRScheduleTypes';
+import HRClients from './pages/hr/HRClients';
+import HRReports from './pages/hr/HRReports';
+import HRClientReports from './pages/hr/HRClientReports';
+import HRRequestsAdmin from './pages/hr/HRRequestsAdmin';
+import HRAnnualBalances from './pages/hr/HRAnnualBalances';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -45,14 +61,36 @@ const AppRoutes = ({ isSidebarOpen, toggleSidebar }) => {
                 <Route path="/" element={<AppLayout isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />}>
                     <Route index element={
                         user?.role === 'Super Admin' ? <Navigate to="/admin/dashboard" replace /> :
-                        user?.role === 'Gestor de RRHH' ? <Navigate to="/dashboard" replace /> : // Default HR to employee dash
+                        user?.role === 'Gestor de RRHH' ? <Navigate to="/hr/dashboard" replace /> :
                         <Navigate to="/dashboard" replace />
                     } />
+
+                    {/* Employee Routes */}
                     <Route path="dashboard" element={<EmployeeDashboard />} />
                     <Route path="history" element={<History />} />
                     <Route path="requests" element={<Requests />} />
+                    <Route path="my-calendar" element={<EmployeeCalendar />} />
 
-                    {/* Admin-specific routes can be added here */}
+                    {/* HR Routes */}
+                    <Route path="hr" element={<ProtectedRoute requiredRole="Gestor de RRHH" allowSuperAdmin={true} />}>
+                        <Route path="dashboard" element={<HRDashboard />} />
+                        <Route path="employees" element={<HREmployees />} />
+                        <Route path="departments" element={<HRDepartments />} />
+                        <Route path="absences" element={<HRAbsences />} />
+                        <Route path="absence-types" element={<HRAbsenceTypes />} />
+                        <Route path="incidents" element={<HRIncidents />} />
+                        <Route path="incident-types" element={<HRIncidentTypes />} />
+                        <Route path="calendar" element={<HRGlobalCalendar />} />
+                        <Route path="holidays" element={<HRHolidays />} />
+                        <Route path="schedule-types" element={<HRScheduleTypes />} />
+                        <Route path="clients" element={<HRClients />} />
+                        <Route path="reports" element={<HRReports />} />
+                        <Route path="client-reports" element={<HRClientReports />} />
+                        <Route path="requests-admin" element={<HRRequestsAdmin />} />
+                        <Route path="annual-balances" element={<HRAnnualBalances />} />
+                    </Route>
+
+                    {/* Super Admin Routes */}
                     <Route path="admin" element={<ProtectedRoute requiredRole="Super Admin" />}>
                         <Route path="dashboard" element={<AdminDashboard />} />
                     </Route>
