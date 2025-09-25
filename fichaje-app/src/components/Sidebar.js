@@ -14,10 +14,7 @@ const Sidebar = () => {
         }
     };
 
-    // Destructure user separately for convenience in the JSX
     const user = auth?.user;
-
-    // Helper function to apply the active class.
     const getNavLinkClass = ({ isActive }) => isActive ? 'sidebar-link active-link' : 'sidebar-link';
 
     return (
@@ -26,16 +23,15 @@ const Sidebar = () => {
                 <img src="https://i.postimg.cc/nZvJGfq9/WORKONTIME-21.png" alt="Logo" className="sidebar-logo" />
             </div>
             <ul className="sidebar-menu">
-                {/* Employee Links */}
                 {user?.role === 'Empleado' && (
                     <>
                         <li><NavLink className={getNavLinkClass} to="/dashboard">Escritorio</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/history">Historial</NavLink></li>
                         <li><NavLink className={getNavLinkClass} to="/requests">Solicitudes</NavLink></li>
+                        <li><NavLink className={getNavLinkClass} to="/my-calendar">Mi Calendario</NavLink></li>
                     </>
                 )}
 
-                {/* HR Manager Only Links */}
                 {user?.role === 'Gestor de RRHH' && (
                     <>
                         <li className="menu-header">Panel de RRHH</li>
@@ -65,7 +61,6 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {/* Super Admin Links */}
                 {user?.role === 'Super Admin' && (
                     <>
                         <li className="menu-header">SUPER ADMIN</li>
@@ -73,7 +68,6 @@ const Sidebar = () => {
                     </>
                 )}
 
-                {/* The empty list item provides some space at the bottom before the logout button */}
                 <li></li>
                 <li className="logout-btn-container">
                     <button onClick={handleLogout} className="logout-btn">Salir</button>

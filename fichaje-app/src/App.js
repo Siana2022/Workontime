@@ -6,6 +6,7 @@ import Kiosk from './pages/Kiosk';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import History from './pages/History';
 import Requests from './pages/Requests';
+import EmployeeCalendar from './pages/EmployeeCalendar';
 import HRDashboard from './pages/hr/HRDashboard';
 import HREmployees from './pages/hr/HREmployees';
 import HRDepartments from './pages/hr/HRDepartments';
@@ -26,28 +27,21 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
 
-// A layout for authenticated users that includes the sidebar
 const AppLayout = () => {
     const { user, logout } = useAuth();
-
-    // With custom auth, if there's no user object, they are not logged in.
-    // The ProtectedRoute handles the redirect, so we just need to wait for loading.
-    // This component will only be rendered on a protected route.
     if (!user) {
         return <div className="loading-container">Verificando usuario...</div>;
     }
-
     return (
         <div className="App">
             <Sidebar />
             <main className="main-content">
-                <Outlet /> {/* Child routes will render here */}
+                <Outlet />
             </main>
         </div>
     );
 };
 
-// This component handles the main routing logic
 const AppRoutes = () => {
     const { user, loading } = useAuth();
 
@@ -60,7 +54,6 @@ const AppRoutes = () => {
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
             <Route path="/kiosk" element={<Kiosk />} />
 
-            {/* All authenticated routes are children of this element */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<AppLayout />}>
                     <Route index element={
@@ -73,6 +66,7 @@ const AppRoutes = () => {
                     <Route path="dashboard" element={<EmployeeDashboard />} />
                     <Route path="history" element={<History />} />
                     <Route path="requests" element={<Requests />} />
+                    <Route path="my-calendar" element={<EmployeeCalendar />} />
 
                     {/* HR Routes */}
                     <Route path="hr" element={<ProtectedRoute requiredRole="Gestor de RRHH" allowSuperAdmin={true} />}>
@@ -87,7 +81,7 @@ const AppRoutes = () => {
                         <Route path="holidays" element={<HRHolidays />} />
                         <Route path="schedule-types" element={<HRScheduleTypes />} />
                         <Route path="clients" element={<HRClients />} />
-                        <Route path="reports" an d element={<HRReports />} />
+                        <Route path="reports" element={<HRReports />} />
                         <Route path="client-reports" element={<HRClientReports />} />
                         <Route path="requests-admin" element={<HRRequestsAdmin />} />
                         <Route path="annual-balances" element={<HRAnnualBalances />} />
@@ -100,13 +94,11 @@ const AppRoutes = () => {
                 </Route>
             </Route>
 
-            {/* Fallback for any other path */}
             <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
         </Routes>
     );
 };
 
-// The main App component now just sets up the router
 function App() {
   return (
     <Router>
