@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
+import { calculateActualWorkedHours } from '../utils/hours';
 import './EmployeeDashboard.css';
+
+// Helper to format decimal hours into Hh Mm format
+const formatHours = (decimalHours) => {
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    return `${hours}h ${minutes}m`;
+};
 
 // Simple StatCard component for displaying stats
 const StatCard = ({ title, value, unit }) => (
@@ -16,7 +24,6 @@ const calculateDaysBetween = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const differenceInTime = end.getTime() - start.getTime();
-    // Add 1 to include both start and end dates in the count
     return Math.round(differenceInTime / (1000 * 3600 * 24)) + 1;
 };
 
@@ -33,10 +40,9 @@ const EmployeeDashboard = () => {
 
     const [usedVacationDays, setUsedVacationDays] = useState(0);
     const [remainingVacationDays, setRemainingVacationDays] = useState(0);
+    const [timeWorkedToday, setTimeWorkedToday] = useState(0);
     const [loadingVacations, setLoadingVacations] = useState(true);
-
-    // New state for clocking status
-    const [clockingStatus, setClockingStatus] = useState('Fuera de servicio'); // Values: 'Trabajando', 'En Pausa', 'Fuera de servicio'
+    const [clockingStatus, setClockingStatus] = useState('Fuera de servicio');
 
 
     useEffect(() => {
@@ -73,22 +79,21 @@ const EmployeeDashboard = () => {
             }
             setLoadingVacations(false);
 
-            // Fetch last time entry for today to determine initial status
+            // Fetch all time entries for today
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const { data: lastEntryData, error: lastEntryError } = await supabase
+            const { data: todayEntries, error: entriesError } = await supabase
                 .from('time_entries')
-                .select('action')
+                .select('*')
                 .eq('employee_id', user.id)
                 .eq('company_id', companyId)
                 .gte('created_at', today.toISOString())
-                .order('created_at', { ascending: false })
-                .limit(1);
+                .order('created_at', { ascending: true });
 
-            if (lastEntryError) {
-                console.error("Error fetching last time entry:", lastEntryError);
-            } else if (lastEntryData && lastEntryData.length > 0) {
-                const lastAction = lastEntryData[0].action;
+            if (entriesError) {
+                console.error("Error fetching today's time entries:", entriesError);
+            } else if (todayEntries && todayEntries.length > 0) {
+                const lastAction = todayEntries[todayEntries.length - 1].action;
                 if (lastAction === 'Entrada' || lastAction === 'Reanudar') {
                     setClockingStatus('Trabajando');
                 } else if (lastAction === 'Pausa') {
@@ -96,6 +101,8 @@ const EmployeeDashboard = () => {
                 } else {
                     setClockingStatus('Fuera de servicio');
                 }
+                const workedHours = calculateActualWorkedHours(todayEntries);
+                setTimeWorkedToday(workedHours);
             }
 
             setLoading(false);
@@ -105,34 +112,22 @@ const EmployeeDashboard = () => {
         return () => clearInterval(timer);
     }, [user?.id, companyId]);
 
-    // Effect to fetch clients if module is enabled
     useEffect(() => {
         const fetchClients = async () => {
             if (!companyId || !settings?.has_clients_module) return;
-
             const { data, error } = await supabase
-                .from('clients')
-                .select('id, name')
-                .eq('company_id', companyId)
-                .order('name', { ascending: true });
-
-            if (error) {
-                console.error('Error fetching clients:', error);
-            } else {
-                setClients(data);
-            }
+                .from('clients').select('id, name').eq('company_id', companyId).order('name', { ascending: true });
+            if (error) console.error('Error fetching clients:', error);
+            else setClients(data);
         };
-
         fetchClients();
     }, [companyId, settings?.has_clients_module]);
 
-    // Effect to calculate remaining vacation days
     useEffect(() => {
         if (user?.vacation_days) {
             setRemainingVacationDays(user.vacation_days - usedVacationDays);
         }
     }, [user?.vacation_days, usedVacationDays]);
-
 
     const recordTimeEntry = async (actionType) => {
         setLoading(true);
@@ -160,7 +155,6 @@ const EmployeeDashboard = () => {
         }
     };
 
-    // Determine button disabled states
     const isClockedOut = clockingStatus === 'Fuera de servicio';
     const isWorking = clockingStatus === 'Trabajando';
     const isOnBreak = clockingStatus === 'En Pausa';
@@ -182,10 +176,10 @@ const EmployeeDashboard = () => {
             <div className="dashboard-section summary-stats">
                 <h3>Resumen General</h3>
                 <div className="stats-grid">
+                    <StatCard title="Tiempo Trabajado Hoy" value={formatHours(timeWorkedToday)} unit="" />
                     <StatCard title="Días Totales" value={loadingVacations ? '...' : (user?.vacation_days || 0)} unit="días" />
                     <StatCard title="Días Usados" value={loadingVacations ? '...' : usedVacationDays} unit="días" />
                     <StatCard title="Días Restantes" value={loadingVacations ? '...' : remainingVacationDays} unit="días" />
-                    {schedule && <StatCard title="Horario Asignado" value={schedule.name} unit={`${schedule.schedule_type} (${schedule.hours_per_week}h/sem)`} />}
                 </div>
             </div>
 

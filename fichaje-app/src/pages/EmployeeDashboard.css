@@ -3,7 +3,6 @@
     text-align: center;
 }
 
-/* Re-using the header style from other pages */
 .dashboard-container h1 {
     background-color: #04003B;
     color: #ffffff;
@@ -76,6 +75,9 @@
     background-color: #ffc107; /* Yellow */
     color: #333;
 }
+.resume {
+    background-color: #007bff; /* Blue */
+}
 .clock-out {
     background-color: #dc3545; /* Red */
 }
@@ -90,12 +92,10 @@
     display: inline-block;
 }
 
-/* Summary Stats Section */
 .dashboard-section.summary-stats {
     margin-top: 20px;
     padding: 15px;
     background-color: #f9f9f9;
-    border-radius: 8px;
     border: 1px solid #e0e0e0;
     max-width: 900px;
     margin-left: auto;
@@ -149,7 +149,6 @@
     margin-left: 5px;
 }
 
-/* Status Indicator */
 .status-indicator-container {
     display: flex;
     justify-content: center;

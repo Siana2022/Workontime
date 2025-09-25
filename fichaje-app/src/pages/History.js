@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { getTheoreticalHoursForDay, calculateActualWorkedHours } from '../utils/hours';
 import './History.css';
 
 const formatTime = (date) => {
@@ -13,59 +12,57 @@ const formatTime = (date) => {
     });
 };
 
-const formatDuration = (hours) => {
-    if (isNaN(hours) || hours < 0) return '0h 0m';
-    const h = Math.floor(hours);
-    const m = Math.round((hours - h) * 60);
-    return `${h}h ${m}m`;
+const formatDuration = (milliseconds) => {
+    if (isNaN(milliseconds) || milliseconds < 0) return '0h 0m 0s';
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
 };
 
-const formatBalance = (hours) => {
-    if (isNaN(hours)) return 'N/A';
-    const sign = hours >= 0 ? '+' : '-';
-    const absoluteHours = Math.abs(hours);
-    const h = Math.floor(absoluteHours);
-    const m = Math.round((absoluteHours - h) * 60);
-    return `${sign}${h}h ${m}m`;
-};
-
-const processTimeEntries = (entries, schedule) => {
+const processTimeEntries = (entries) => {
     if (!entries || entries.length === 0) return [];
 
     const groupedByDate = entries.reduce((acc, entry) => {
-        const dateKey = new Date(entry.created_at).toISOString().split('T')[0];
-        if (!acc[dateKey]) {
-            acc[dateKey] = [];
+        const date = new Date(entry.created_at).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+        if (!acc[date]) {
+            acc[date] = [];
         }
-        acc[dateKey].push(entry);
+        acc[date].push(entry);
         return acc;
     }, {});
 
-    return Object.entries(groupedByDate).map(([dateKey, dailyEntries]) => {
+    return Object.entries(groupedByDate).map(([date, dailyEntries]) => {
+        // Sort entries chronologically for the day
         dailyEntries.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-        const date = new Date(dateKey + 'T12:00:00Z'); // Use midday to avoid timezone issues
-        const displayDate = date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
         const clockInEntry = dailyEntries.find(e => e.action === 'Entrada');
         const clockOutEntries = dailyEntries.filter(e => e.action === 'Salida');
-        const clockOutEntry = clockOutEntries[clockOutEntries.length - 1];
+        const clockOutEntry = clockOutEntries[clockOutEntries.length - 1]; // Last clock-out
 
-        const actualHours = calculateActualWorkedHours(dailyEntries);
-        const theoreticalHours = getTheoreticalHoursForDay(schedule, date);
+        const clockInTime = clockInEntry ? new Date(clockInEntry.created_at) : null;
+        const clockOutTime = clockOutEntry ? new Date(clockOutEntry.created_at) : null;
 
-        const balance = (theoreticalHours > 0 || actualHours > 0) ? actualHours - theoreticalHours : 0;
+        let totalDuration = 0;
+        if (clockInTime && clockOutTime) {
+            totalDuration = clockOutTime - clockInTime;
+            // Note: This simple calculation doesn't account for pauses.
+            // A more complex implementation would subtract pause durations.
+        }
 
         return {
-            id: dateKey,
-            date: displayDate,
-            clockIn: clockInEntry ? formatTime(clockInEntry.created_at) : '---',
-            clockOut: clockOutEntry ? formatTime(clockOutEntry.created_at) : '---',
-            total: formatDuration(actualHours),
-            balance: theoreticalHours > 0 ? formatBalance(balance) : 'N/A',
-            balanceHours: balance,
+            id: date, // Use date as a unique key for the row
+            date: date,
+            clockIn: clockInTime ? formatTime(clockInTime) : '---',
+            clockOut: clockOutTime ? formatTime(clockOutTime) : '---',
+            total: clockInTime && clockOutTime ? formatDuration(totalDuration) : 'En curso',
         };
-    }).sort((a, b) => new Date(b.id) - new Date(a.id));
+    });
 };
 
 
@@ -77,30 +74,20 @@ const History = () => {
 
     useEffect(() => {
         const fetchHistory = async () => {
-            if (!user?.id) return;
+            if (!user.id) return;
 
             try {
                 setLoading(true);
                 setError(null);
+                const { data, error } = await supabase
+                    .from('time_entries')
+                    .select('*')
+                    .eq('employee_id', user.id)
+                    .order('created_at', { ascending: false });
 
-                const [timeEntriesRes, employeeRes] = await Promise.all([
-                    supabase
-                        .from('time_entries')
-                        .select('*')
-                        .eq('employee_id', user.id)
-                        .order('created_at', { ascending: false }),
-                    supabase
-                        .from('employees')
-                        .select('schedules(*)')
-                        .eq('id', user.id)
-                        .single()
-                ]);
+                if (error) throw error;
 
-                if (timeEntriesRes.error) throw timeEntriesRes.error;
-                if (employeeRes.error) throw employeeRes.error;
-
-                const schedule = employeeRes.data?.schedules;
-                const processedHistory = processTimeEntries(timeEntriesRes.data, schedule);
+                const processedHistory = processTimeEntries(data);
                 setHistory(processedHistory);
 
             } catch (error) {
@@ -112,7 +99,7 @@ const History = () => {
         };
 
         fetchHistory();
-    }, [user?.id]);
+    }, [user.id]);
 
     if (loading) {
         return <div className="history-container"><h1>Historial de Fichajes</h1><p>Cargando...</p></div>;
@@ -132,7 +119,6 @@ const History = () => {
                         <th>Entrada</th>
                         <th>Salida</th>
                         <th>Total Horas</th>
-                        <th>Balance</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -142,13 +128,10 @@ const History = () => {
                             <td>{record.clockIn}</td>
                             <td>{record.clockOut}</td>
                             <td>{record.total}</td>
-                            <td className={record.balanceHours > 0.01 ? 'positive-balance' : record.balanceHours < -0.01 ? 'negative-balance' : ''}>
-                                {record.balance}
-                            </td>
                         </tr>
                     )) : (
                         <tr>
-                            <td colSpan="5">No hay registros de fichajes.</td>
+                            <td colSpan="4">No hay registros de fichajes.</td>
                         </tr>
                     )}
                 </tbody>
