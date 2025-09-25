@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { calculateActualWorkedHours } from '../utils/hours';
+// import { calculateActualWorkedHours } from '../utils/hours'; // Temporarily disabled for debugging
 import './EmployeeDashboard.css';
 
 // Helper to format decimal hours into Hh Mm format
