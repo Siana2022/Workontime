@@ -33,7 +33,7 @@ const Kiosk = () => {
             const { data: companyData, error: companyError } = await supabase
                 .from('companies')
                 .select('id, name')
-                .eq('name', companyName)
+                .ilike('name', companyName)
                 .single();
 
             if (companyError || !companyData) {
