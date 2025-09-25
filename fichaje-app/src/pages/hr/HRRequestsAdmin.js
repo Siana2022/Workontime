@@ -69,6 +69,7 @@ const HRRequestsAdmin = () => {
                 const newTimeEntries = [
                     {
                         employee_id: requestToUpdate.employee_id,
+                        employee_name: requestToUpdate.employee_name,
                         company_id: companyId,
                         action: 'Entrada',
                         created_at: entryTimestamp.toISOString(),
@@ -76,6 +77,7 @@ const HRRequestsAdmin = () => {
                     },
                     {
                         employee_id: requestToUpdate.employee_id,
+                        employee_name: requestToUpdate.employee_name,
                         company_id: companyId,
                         action: 'Salida',
                         created_at: exitTimestamp.toISOString(),
