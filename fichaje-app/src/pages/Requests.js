@@ -105,7 +105,7 @@ const Requests = () => {
                 end_date: endDate,
             };
 
-        console.log("Objeto enviado a Supabase:", newRequest);
+        alert("Datos a enviar: " + JSON.stringify(newRequest, null, 2));
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
 
         if (insertError) {
