@@ -6,7 +6,6 @@ import Kiosk from './pages/Kiosk';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import History from './pages/History';
 import Requests from './pages/Requests';
-import EmployeeCalendar from './pages/EmployeeCalendar';
 import HRDashboard from './pages/hr/HRDashboard';
 import HREmployees from './pages/hr/HREmployees';
 import HRDepartments from './pages/hr/HRDepartments';
@@ -74,7 +73,6 @@ const AppRoutes = () => {
                     <Route path="dashboard" element={<EmployeeDashboard />} />
                     <Route path="history" element={<History />} />
                     <Route path="requests" element={<Requests />} />
-                    <Route path="my-calendar" element={<EmployeeCalendar />} />
 
                     {/* HR Routes */}
                     <Route path="hr" element={<ProtectedRoute requiredRole="Gestor de RRHH" allowSuperAdmin={true} />}>

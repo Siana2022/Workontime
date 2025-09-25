@@ -105,3 +105,36 @@
     border: 1px solid #f5c6cb;
     border-radius: 5px;
 }
+
+.monthly-balance-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    padding: 20px;
+    background-color: #f0f2f5;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.report-subsection {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.report-subsection h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.positive-balance {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.negative-balance {
+    color: #dc3545;
+    font-weight: bold;
+}

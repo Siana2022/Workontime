@@ -35,3 +35,13 @@
 .history-table tbody tr:hover {
     background-color: #e8e8e8;
 }
+
+.positive-balance {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.negative-balance {
+    color: #dc3545;
+    font-weight: bold;
+}
