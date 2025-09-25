@@ -83,7 +83,7 @@ const Requests = () => {
         const newRequestBase = {
             employee_id: user.id,
             company_id: companyId,
-            employee_name: user.full_name,
+            full_name: user.full_name, // Corrected from employee_name
             request_type: requestType,
             comments: comments,
             status: 'Pendiente',
@@ -105,7 +105,6 @@ const Requests = () => {
                 end_date: endDate,
             };
 
-        alert("Datos a enviar: " + JSON.stringify(newRequest, null, 2));
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
 
         if (insertError) {
