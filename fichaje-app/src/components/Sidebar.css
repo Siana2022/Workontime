@@ -9,12 +9,29 @@
     left: 0;
     display: flex;
     flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.sidebar.open {
+    transform: translateX(0);
 }
 
 .sidebar-header {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-bottom: 20px;
     border-bottom: 1px solid #1c2a5e; /* Lighter border for dark bg */
+}
+
+.sidebar-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
 }
 
 .sidebar-logo {

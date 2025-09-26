@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { generateMonthGrid } from '../../utils/calendar';
@@ -53,7 +52,6 @@ const HolidayForm = ({ holiday, onSave, onCancel, isSaving }) => {
 
 const HRHolidays = () => {
     const { companyId } = useAuth();
-    const fileInputRef = useRef(null);
     const [holidays, setHolidays] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingHoliday, setEditingHoliday] = useState(null);
@@ -130,59 +128,6 @@ const HRHolidays = () => {
         }
     };
 
-    const handleFileImport = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: async (results) => {
-                if (!results.meta.fields.includes('fecha') || !results.meta.fields.includes('descripcion')) {
-                    setError('El archivo CSV debe tener las columnas "fecha" y "descripcion".');
-                    return;
-                }
-
-                const newHolidays = results.data.map(row => {
-                    if (!row.fecha || !row.descripcion) {
-                        console.warn('Fila ignorada por datos incompletos:', row);
-                        return null;
-                    }
-                    return {
-                        company_id: companyId,
-                        date: row.fecha,
-                        name: row.descripcion,
-                    };
-                }).filter(Boolean);
-
-                if (newHolidays.length === 0) {
-                    setError('No se encontraron festivos válidos para importar en el archivo.');
-                    return;
-                }
-
-                try {
-                    setIsSaving(true);
-                    const { error: insertError } = await supabase.from('holidays').insert(newHolidays);
-                    if (insertError) throw insertError;
-
-                    alert(`${newHolidays.length} festivos importados correctamente.`);
-                    fetchHolidays();
-                } catch (err) {
-                    setError(`Error al importar los festivos: ${err.message}`);
-                    console.error(err);
-                } finally {
-                    setIsSaving(false);
-                    if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                    }
-                }
-            },
-            error: (err) => {
-                setError(`Error al procesar el archivo CSV: ${err.message}`);
-            }
-        });
-    };
-
     const handleCancel = () => {
         setIsFormVisible(false);
         setEditingHoliday(null);
@@ -206,19 +151,7 @@ const HRHolidays = () => {
             {isFormVisible && <HolidayForm holiday={editingHoliday} onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} />}
             <div className="hr-panel-header">
                 <h1>Gestión de Días Festivos</h1>
-                <div>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        accept=".csv"
-                        onChange={handleFileImport}
-                    />
-                    <button onClick={() => fileInputRef.current.click()} className="hr-panel-add-btn secondary-btn">
-                        Importar desde CSV
-                    </button>
-                    <button onClick={handleAdd} className="hr-panel-add-btn">+ Añadir Festivo</button>
-                </div>
+                <button onClick={handleAdd} className="hr-panel-add-btn">+ Añadir Festivo</button>
             </div>
 
             {error && <p className="error-message">{error}</p>}

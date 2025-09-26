@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import './HRPanel.css';
@@ -116,7 +115,6 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
 
 const HREmployees = () => {
     const { companyId, settings } = useAuth();
-    const fileInputRef = useRef(null);
     const [employees, setEmployees] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [departments, setDepartments] = useState([]);
@@ -211,8 +209,7 @@ const HREmployees = () => {
                 avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
             }
 
-            // Desestructuramos para quitar los campos computados que no existen en la tabla 'employees'
-            const { id, schedule, department, assigned_clients, ...formData } = employeeData;
+            const { id, ...formData } = employeeData;
             const record = {
                 ...formData,
                 avatar_url: avatarUrl,
@@ -263,82 +260,6 @@ const HREmployees = () => {
         }
     };
 
-    const handleHistoryImport = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: async (results) => {
-                const requiredFields = ['employee_email', 'timestamp', 'action'];
-                if (!requiredFields.every(field => results.meta.fields.includes(field))) {
-                    setError(`El CSV debe contener las columnas: ${requiredFields.join(', ')}.`);
-                    return;
-                }
-
-                const emails = [...new Set(results.data.map(row => row.employee_email).filter(Boolean))];
-                if (emails.length === 0) {
-                    setError('No se encontraron emails de empleados en el archivo.');
-                    return;
-                }
-
-                try {
-                    setIsSaving(true);
-                    setError('');
-
-                    const { data: employeesData, error: empError } = await supabase
-                        .from('employees')
-                        .select('id, full_name, user_id, email')
-                        .in('email', emails)
-                        .eq('company_id', companyId);
-
-                    if (empError) throw empError;
-
-                    const employeeMap = new Map(employeesData.map(emp => [emp.email, { id: emp.id, name: emp.full_name }]));
-
-                    let successfulImports = 0;
-                    let failedImports = 0;
-
-                    const newTimeEntries = results.data.map(row => {
-                        const employeeInfo = employeeMap.get(row.employee_email);
-                        if (!employeeInfo || !row.timestamp || !row.action) {
-                            failedImports++;
-                            return null;
-                        }
-                        successfulImports++;
-                        return {
-                            employee_id: employeeInfo.id,
-                            employee_name: employeeInfo.name,
-                            company_id: companyId,
-                            created_at: new Date(row.timestamp).toISOString(),
-                            action: row.action,
-                            source: 'Importado',
-                        };
-                    }).filter(Boolean);
-
-                    if (newTimeEntries.length > 0) {
-                        const { error: insertError } = await supabase.from('time_entries').insert(newTimeEntries);
-                        if (insertError) throw insertError;
-                    }
-
-                    alert(`Importación completada.\nRegistros correctos: ${successfulImports}\nRegistros fallidos: ${failedImports}`);
-
-                } catch (err) {
-                    setError(`Error al importar el historial: ${err.message}`);
-                } finally {
-                    setIsSaving(false);
-                    if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                    }
-                }
-            },
-            error: (err) => {
-                setError(`Error al procesar el archivo CSV: ${err.message}`);
-            }
-        });
-    };
-
     const handleCancel = () => {
         setIsFormVisible(false);
         setEditingEmployee(null);
@@ -351,19 +272,7 @@ const HREmployees = () => {
             {isFormVisible && <EmployeeForm employee={editingEmployee} schedules={schedules} departments={departments} clients={clients} assignedClientIds={assignedClientIds} onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} settings={settings} />}
             <div className="hr-panel-header">
                 <h1>Gestión de Empleados</h1>
-                <div>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        accept=".csv"
-                        onChange={handleHistoryImport}
-                    />
-                    <button onClick={() => fileInputRef.current.click()} className="hr-panel-add-btn secondary-btn">
-                        Importar Historial (CSV)
-                    </button>
-                    <button onClick={handleAdd} className="hr-panel-add-btn">+ Añadir Empleado</button>
-                </div>
+                <button onClick={handleAdd} className="hr-panel-add-btn">+ Añadir Empleado</button>
             </div>
 
             {loading && <p>Cargando...</p>}

@@ -3,7 +3,51 @@
 }
 
 .main-content {
-  margin-left: 270px; /* sidebar width + padding */
   padding: 20px;
   width: 100%;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar-toggle {
+    display: none; /* Hidden by default on desktop where sidebar is part of layout */
+}
+
+/* Mobile-first: styles for small screens */
+@media (max-width: 768px) {
+    .App {
+        flex-direction: column;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: block;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 999;
+        background: #04003B;
+        color: white;
+        border: 1px solid white;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+    .sidebar {
+        transform: translateX(0); /* Sidebar is always visible on desktop */
+    }
+
+    .main-content {
+        margin-left: 270px; /* sidebar width + padding */
+    }
+
+    .sidebar-toggle, .sidebar-close-btn {
+        display: none; /* Hide mobile-only controls on desktop */
+    }
 }

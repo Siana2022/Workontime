@@ -53,47 +53,57 @@ const HRRequestsAdmin = () => {
         );
         setRequests(updatedRequests.filter(req => newStatus === 'Pendiente' || req.id !== requestId));
 
-        // Si se aprueba un error de fichaje, se crea un registro de tiempo corregido.
+        // If approving a clock-in error, also create an incident
         if (newStatus === 'Aprobada' && requestToUpdate.request_type === 'Error en el fichaje') {
             try {
-                // NOTA: Para cumplir con el requisito de crear una entrada y una salida,
-                // se asume que 'hora_entrada_real' es la hora de entrada y 'hora_entrada_fichada' es la hora de salida.
-                // Se recomienda actualizar la etiqueta en el formulario de solicitud para que refleje "Hora de Salida".
-                if (!requestToUpdate.hora_entrada_real || !requestToUpdate.hora_entrada_fichada) {
-                    throw new Error('La solicitud no contiene las horas de entrada y salida necesarias.');
+                const description = `Error de fichaje. Hora real: ${requestToUpdate.hora_entrada_real}, Hora fichada: ${requestToUpdate.hora_entrada_fichada}. Notas: ${requestToUpdate.comments || 'N/A'}`;
+
+                // Resiliently get or create the incident type ID
+                let incidentTypeId;
+                const typeName = 'Error en el fichaje';
+
+                const { data: typeData, error: typeError } = await supabase
+                    .from('incident_types')
+                    .select('id')
+                    .eq('name', typeName)
+                    .eq('company_id', companyId)
+                    .single();
+
+                if (typeError && typeError.code !== 'PGRST116') { // PGRST116 is 'exact one row not found'
+                    throw typeError;
                 }
 
-                const entryTimestamp = new Date(`${requestToUpdate.start_date}T${requestToUpdate.hora_entrada_real}`);
-                const exitTimestamp = new Date(`${requestToUpdate.start_date}T${requestToUpdate.hora_entrada_fichada}`);
+                if (typeData) {
+                    incidentTypeId = typeData.id;
+                } else {
+                    // If not found, create it
+                    const { data: newTypeData, error: newTypeError } = await supabase
+                        .from('incident_types')
+                        .insert({ name: typeName, description: 'Generado automáticamente por el sistema.', company_id: companyId })
+                        .select('id')
+                        .single();
 
-                const newTimeEntries = [
-                    {
-                        employee_id: requestToUpdate.employee_id,
-                        employee_name: requestToUpdate.employee_name,
-                        company_id: companyId,
-                        action: 'Entrada',
-                        created_at: entryTimestamp.toISOString(),
-                        source: 'Corrección manual',
-                    },
-                    {
-                        employee_id: requestToUpdate.employee_id,
-                        employee_name: requestToUpdate.employee_name,
-                        company_id: companyId,
-                        action: 'Salida',
-                        created_at: exitTimestamp.toISOString(),
-                        source: 'Corrección manual',
+                    if (newTypeError) {
+                        throw new Error(`No se pudo crear el tipo de incidencia necesario: ${newTypeError.message}`);
                     }
-                ];
-
-                const { error: timeEntriesError } = await supabase.from('time_entries').insert(newTimeEntries);
-
-                if (timeEntriesError) {
-                    throw new Error(`Error al insertar la corrección de fichaje: ${timeEntriesError.message}`);
+                    incidentTypeId = newTypeData.id;
                 }
+
+                const newIncident = {
+                    employee_id: requestToUpdate.employee_id,
+                    company_id: companyId,
+                    incident_type_id: incidentTypeId,
+                    date: requestToUpdate.start_date,
+                    description: description,
+                    status: 'Cerrada'
+                };
+
+                const { error: incidentError } = await supabase.from('incidents').insert([newIncident]);
+                if (incidentError) throw incidentError;
 
             } catch (err) {
-                console.error('Error creating time entry from request:', err);
-                alert(`Error al procesar la aprobación: ${err.message}`);
+                console.error('Error creating incident from request:', err);
+                alert(`Error al crear la incidencia: ${err.message}`);
                 setRequests(originalRequests);
                 return;
             }
