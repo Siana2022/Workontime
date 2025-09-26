@@ -30,12 +30,13 @@ serve(async (req) => {
 
     // Create the employee profile
     const { error: profileError } = await supabaseAdmin.from('employees').insert({
-      id: newUserId,
+      user_id: newUserId,
       full_name: fullName,
       email: email,
       pin: pin,
       role: 'Gestor de RRHH',
       company_id: companyId,
+      vacation_days: 22, // Ensure default vacation days are set
     });
 
     if (profileError) {
