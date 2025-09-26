@@ -48,6 +48,6 @@
     }
 
     .sidebar-toggle, .sidebar-close-btn {
-        display: none; /* Hide mobile-only controls on desktop */
+        display: none !important; /* Hide mobile-only controls on desktop */
     }
 }
