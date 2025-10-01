@@ -26,12 +26,12 @@
 
 .summary-card .card-body {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 2rem;
 }
 
 .summary-card .stat-item {
-  text-align: left;
+  text-align: center;
 }
 
 .summary-card .stat-value {

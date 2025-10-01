@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 import {
     FiGrid, FiUsers, FiAlertTriangle, FiCalendar, FiBriefcase,
-    FiClock, FiSettings, FiBarChart2, FiInbox, FiDollarSign, FiGift, FiLogOut
+    FiClock, FiSettings, FiBarChart2, FiInbox, FiDollarSign, FiGift,
+    FiLogOut, FiClipboard, FiUserCheck, FiFileText
 } from 'react-icons/fi';
 
 const Sidebar = () => {
     const { logout, user } = useAuth();
+    const logoUrl = "https://i.postimg.cc/D28NhLc6/WORKONTIME-20.png";
 
     const handleLogout = () => {
         if (logout) {
@@ -32,6 +34,9 @@ const Sidebar = () => {
         { to: "/hr/requests-admin", icon: <FiInbox />, text: "SOLICITUDES" },
         { to: "/hr/annual-balances", icon: <FiDollarSign />, text: "SALDOS" },
         { to: "/hr/holidays", icon: <FiGift />, text: "DÍAS FESTIVOS" },
+        { to: "/hr/schedule-types", icon: <FiClipboard />, text: "TIPOS DE HORARIO" },
+        { to: "/hr/clients", icon: <FiUserCheck />, text: "CLIENTES" },
+        { to: "/hr/client-reports", icon: <FiFileText />, text: "INFORMES DE CLIENTES" },
     ];
 
     const employeeNavLinks = [
@@ -54,11 +59,10 @@ const Sidebar = () => {
         navLinks = adminNavLinks;
     }
 
-
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <h1 className="sidebar-logo">WORK ON TIME</h1>
+                <img src={logoUrl} alt="Work On Time Logo" className="sidebar-logo" />
             </div>
             <nav className="sidebar-nav">
                 <ul>

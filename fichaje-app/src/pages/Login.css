@@ -3,15 +3,15 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: var(--primary-bg);
+    background-color: #FFFFFF; /* White background as requested */
 }
 
 .login-form {
     padding: 40px;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background-color: var(--content-bg); /* White background for the form card */
+    border: 1px solid var(--border-color); /* Subtle border */
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* A bit more pronounced shadow for contrast */
     width: 100%;
     max-width: 400px;
     text-align: center;
@@ -39,7 +39,7 @@
     width: 100%;
     padding: 10px;
     border: 1px solid var(--border-color);
-    background-color: var(--primary-bg);
+    background-color: #FFFFFF;
     color: var(--text-primary);
     border-radius: 5px;
     box-sizing: border-box;
@@ -52,7 +52,7 @@
     border: none;
     border-radius: 5px;
     background-color: var(--accent-color);
-    color: var(--text-primary);
+    color: #FFFFFF;
     font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
@@ -73,5 +73,5 @@
 .login-logo {
     max-width: 200px;
     margin-bottom: 2rem;
-    filter: brightness(0) invert(1);
+    /* Removed the filter to show original logo colors */
 }
