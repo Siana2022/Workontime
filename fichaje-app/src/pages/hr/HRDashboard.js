@@ -1,115 +1,164 @@
 import React, { useState, useEffect } from 'react';
-import StatCard from '../../components/hr/StatCard';
-import ShortcutButton from '../../components/hr/ShortcutButton';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
+import SummaryCard from '../../components/hr/SummaryCard';
+import { FiBell, FiArrowRight } from 'react-icons/fi';
 import './HRDashboard.css';
 
 const HRDashboard = () => {
     const { companyId } = useAuth();
-    const [stats, setStats] = useState({
-        totalEmployees: 0,
-        pendingRequests: 0,
-        activeToday: 0,
-    });
-    const [recentActivity, setRecentActivity] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [employees, setEmployees] = useState([]);
+    const [stats, setStats] = useState({
+        activeEmployees: 0,
+        pausedEmployees: 0,
+        activeFreelancers: 2, // Mock data
+        pendingAbsences: 0,
+        pendingClockings: 0,
+        detectedIncidents: 0
+    });
+
+    // Mock data for freelancers as the schema is unknown
+    const freelancers = [
+        { name: 'Nacho Córdoba', status: 'Activo', task_start_time: '09:51:32', current_task: 'Olympikus' },
+        { name: 'Siana Digital', status: 'Activo', task_start_time: '08:59', current_task: 'Siana Digital' }
+    ];
 
     useEffect(() => {
         if (!companyId) return;
 
-        const fetchDashboardStats = async () => {
+        const fetchDashboardData = async () => {
             setLoading(true);
 
-            // --- Date calculations for queries ---
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Start of today
-            const fiveDaysAgo = new Date();
-            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-            fiveDaysAgo.setHours(0, 0, 0, 0); // Start of 5 days ago
+            today.setHours(0, 0, 0, 0);
 
-            // --- Parallel data fetching ---
-            const [employeeRes, requestsRes, activeTodayRes, activityRes] = await Promise.all([
-                supabase.from('employees').select('*', { count: 'exact', head: true }).eq('company_id', companyId),
-                supabase.from('requests').select('*', { count: 'exact', head: true }).eq('status', 'Pendiente').eq('company_id', companyId),
-                supabase.from('time_entries').select('employee_id').eq('action', 'Entrada').gte('created_at', today.toISOString()).eq('company_id', companyId),
-                supabase.from('time_entries').select('*').gte('created_at', fiveDaysAgo.toISOString()).eq('company_id', companyId).order('created_at', { ascending: false }).limit(10)
-            ]);
+            // Fetch employees and their last time entry for today
+            const { data: employeesData, error: employeesError } = await supabase
+                .from('employees')
+                .select(`
+                    id,
+                    name,
+                    time_entries (
+                        action,
+                        created_at
+                    )
+                `)
+                .eq('company_id', companyId)
+                .order('created_at', { foreignTable: 'time_entries', ascending: false });
 
-            // --- Process results ---
-            const newStats = {};
-
-            // Total Employees
-            if (employeeRes.error) console.error('Error fetching employee count:', employeeRes.error);
-            else newStats.totalEmployees = employeeRes.count;
-
-            // Pending Requests
-            if (requestsRes.error) console.error('Error fetching pending requests count:', requestsRes.error);
-            else newStats.pendingRequests = requestsRes.count;
-
-            // Active Today
-            if (activeTodayRes.error) console.error('Error fetching active employees:', activeTodayRes.error);
-            else {
-                const uniqueActiveIds = new Set(activeTodayRes.data.map(e => e.employee_id));
-                newStats.activeToday = uniqueActiveIds.size;
+            if (employeesError) {
+                console.error("Error fetching employees:", employeesError);
             }
 
-            // Recent Activity
-            if (activityRes.error) console.error('Error fetching recent activity:', activityRes.error);
-            else setRecentActivity(activityRes.data);
+            // Calculate stats
+            let activeEmployees = 0;
+            let pausedEmployees = 0;
+            const processedEmployees = employeesData.map(emp => {
+                const todaysEntries = emp.time_entries.filter(e => new Date(e.created_at) >= today);
+                const lastEntry = todaysEntries[0];
+                let status = 'Fuera';
+                let entryTime = '--:--';
+                if (lastEntry) {
+                    if (lastEntry.action === 'Entrada' || lastEntry.action === 'Reanudar') {
+                        status = 'Activo';
+                        activeEmployees++;
+                    } else if (lastEntry.action === 'Pausa') {
+                        status = 'Pausa';
+                        pausedEmployees++;
+                    }
+                    entryTime = new Date(lastEntry.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                }
+                return { ...emp, status, entryTime, currentTask: 'Ceivan Medical' }; // Mock task
+            });
 
-            setStats(prevStats => ({ ...prevStats, ...newStats }));
+            setEmployees(processedEmployees);
+            setStats(prev => ({ ...prev, activeEmployees, pausedEmployees }));
             setLoading(false);
         };
 
-        fetchDashboardStats();
+        fetchDashboardData();
     }, [companyId]);
 
-    const shortcuts = [
-        { title: 'Gestionar Empleados', to: '/hr/employees' },
-        { title: 'Ver Informes', to: '/hr/reports' },
-        { title: 'Administrar Solicitudes', to: '/hr/requests-admin' },
-        { title: 'Calendario Global', to: '/hr/calendar' },
+
+    const summaryStats = [
+        { title: 'Estado Empleados', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#6EE7B7' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#FCD34D' }] },
+        { title: 'Estado Autónomos', stats: [{ value: stats.activeFreelancers, label: 'Activos', color: '#6EE7B7' }] },
+        { title: 'Solicitudes Pendientes', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar' }] },
+        { title: 'Ausencias Pendientes', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar' }] },
+        { title: 'Incidencias Detectadas', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar' }] }
     ];
 
     return (
         <div className="hr-dashboard">
-            <h1>Escritorio de RRHH</h1>
-
-            <section className="dashboard-section">
-                <h2>Resumen General</h2>
-                <div className="stats-grid">
-                    <StatCard title="Total de Empleados" value={loading ? '...' : stats.totalEmployees} />
-                    <StatCard title="Solicitudes Pendientes" value={loading ? '...' : stats.pendingRequests} />
-                    <StatCard title="Activos Hoy" value={loading ? '...' : stats.activeToday} />
+            <header className="dashboard-header">
+                <div>
+                    <h1>Escritorio de Fichajes</h1>
+                    <p>Un resumen del estado actual de los empleados y las solicitudes.</p>
                 </div>
-            </section>
-
-            <section className="dashboard-section">
-                <h2>Accesos Directos</h2>
-                <div className="shortcuts-grid">
-                    {shortcuts.map(shortcut => (
-                        <ShortcutButton key={shortcut.to} title={shortcut.title} to={shortcut.to} />
-                    ))}
+                <div className="header-actions">
+                    <button><FiBell /></button>
+                    <button><FiArrowRight /></button>
                 </div>
-            </section>
+            </header>
 
-            <section className="dashboard-section">
-                <h2>Actividad Reciente (Últimos 5 días)</h2>
-                <div className="recent-activity-widget">
-                    {loading ? <p>Cargando actividad...</p> :
-                        <ul className="activity-list">
-                            {recentActivity.length > 0 ? recentActivity.map(entry => (
-                                <li key={entry.id} className="activity-item">
-                                    <span className="activity-name">{entry.employee_name}</span>
-                                    <span className={`activity-action action-${entry.action.toLowerCase()}`}>{entry.action}</span>
-                                    <span className="activity-time">{new Date(entry.created_at).toLocaleString('es-ES')}</span>
-                                </li>
-                            )) : <p>No hay actividad reciente.</p>}
-                        </ul>
-                    }
+            <div className="summary-grid">
+                {summaryStats.map((item, index) => (
+                    <SummaryCard key={index} title={item.title} stats={item.stats} />
+                ))}
+            </div>
+
+            <div className="details-grid">
+                <div className="employee-details card">
+                    <h2>Detalle de Empleados (Hoy)</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>EMPLEADOS</th>
+                                <th>ESTADO ACTUAL</th>
+                                <th>HORA DE ENTRADA</th>
+                                <th>TAREA ACTUAL</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (<tr><td colSpan="5">Cargando...</td></tr>) :
+                                employees.map(emp => (
+                                    <tr key={emp.id}>
+                                        <td>{emp.name}</td>
+                                        <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
+                                        <td>{emp.entryTime}</td>
+                                        <td>{emp.currentTask}</td>
+                                        <td><a href="#" className="action-link">Ver Historial</a></td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            </section>
+
+                <div className="freelancer-details card">
+                     <h2>Detalle de Autónomos (Activos ahora)</h2>
+                     <table>
+                         <thead>
+                             <tr>
+                                 <th>AUTÓNOMO</th>
+                                 <th>ESTADO ACTUAL</th>
+                                 <th>INICIO DE TAREA</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                            {freelancers.map((freelancer, index) => (
+                                <tr key={index}>
+                                    <td>{freelancer.name}</td>
+                                    <td><span className="status-activo">{freelancer.status}</span></td>
+                                    <td>{freelancer.task_start_time}</td>
+                                </tr>
+                            ))}
+                         </tbody>
+                     </table>
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,0 +1,47 @@
+.summary-card {
+  padding: 1.25rem;
+}
+
+.summary-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card .card-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.summary-card .card-options-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.summary-card .card-body {
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
+.summary-card .stat-item {
+  text-align: left;
+}
+
+.summary-card .stat-value {
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.summary-card .stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}

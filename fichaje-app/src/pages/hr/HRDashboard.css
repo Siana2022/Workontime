@@ -1,86 +1,126 @@
 .hr-dashboard {
-    padding: 2rem;
-    background-color: #f8f9fa; /* Light gray background for the whole page */
-    font-family: 'Sen', sans-serif;
-    min-height: 100vh;
+  color: var(--text-primary);
 }
 
-.hr-dashboard h1 {
-    font-size: 1.8rem;
-    color: #343a40;
-    margin-bottom: 2rem;
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
 }
 
-.dashboard-section {
-    margin-bottom: 2.5rem;
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
 }
 
-.dashboard-section h2 {
-    font-size: 1.2rem;
-    color: #495057;
-    margin-bottom: 1.5rem;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
+.dashboard-header p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 1rem;
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 25px;
+.header-actions button {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 
-.shortcuts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
-.recent-activity-widget {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.details-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1.5rem;
 }
 
-.activity-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.employee-details, .freelancer-details {
+  padding: 1.5rem;
 }
 
-.activity-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 10px;
-    border-bottom: 1px solid #f0f2f5;
+.employee-details h2, .freelancer-details h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1.5rem 0;
 }
 
-.activity-item:last-child {
-    border-bottom: none;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.activity-name {
-    font-weight: bold;
-    color: #333;
+thead {
+  border-bottom: 1px solid var(--border-color);
 }
 
-.activity-action {
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: white;
-    font-size: 0.9em;
-    min-width: 60px;
-    text-align: center;
+th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.action-entrada { background-color: #28a745; }
-.action-salida { background-color: #dc3545; }
-.action-pausa { background-color: #ffc107; color: #333; }
+td {
+  padding: 1rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
 
-.activity-time {
-    color: #6c757d;
-    font-size: 0.9em;
+tbody tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+.status-activo, .status-pausa, .status-fuera {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  display: inline-block;
+  text-align: center;
+}
+
+.status-activo {
+  background-color: var(--active-status-bg);
+  color: var(--active-status-text);
+}
+
+.status-pausa {
+  background-color: #FEF9C3;
+  color: #854D0E;
+}
+
+.status-fuera {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.action-link {
+  color: #EF4444;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.action-link:hover {
+  text-decoration: underline;
 }

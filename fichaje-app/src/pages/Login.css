@@ -3,13 +3,13 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f2f5;
-    font-family: 'Sen', sans-serif;
+    background-color: var(--primary-bg);
 }
 
 .login-form {
     padding: 40px;
-    background-color: white;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -20,7 +20,7 @@
 .login-form h2 {
     margin-top: 0;
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .form-group {
@@ -32,13 +32,15 @@
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: var(--text-secondary);
 }
 
 .form-group input {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
+    background-color: var(--primary-bg);
+    color: var(--text-primary);
     border-radius: 5px;
     box-sizing: border-box;
     font-size: 1em;
@@ -49,8 +51,8 @@
     padding: 12px;
     border: none;
     border-radius: 5px;
-    background-color: #04003B; /* Using the theme color */
-    color: white;
+    background-color: var(--accent-color);
+    color: var(--text-primary);
     font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
@@ -58,17 +60,18 @@
 }
 
 .login-btn:hover {
-    background-color: #1c2a5e; /* A lighter shade from the theme */
+    opacity: 0.9;
 }
 
 .error-message {
-    color: #dc3545;
+    color: #EF4444;
     margin-bottom: 15px;
     font-weight: bold;
     text-align: center;
 }
 
 .login-logo {
-    max-width: 250px;
+    max-width: 200px;
     margin-bottom: 2rem;
+    filter: brightness(0) invert(1);
 }

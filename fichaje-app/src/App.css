@@ -1,53 +1,72 @@
+:root {
+  --primary-bg: #0F172A;
+  --sidebar-bg: #1E293B;
+  --card-bg: #1E293B;
+  --accent-color: #3B82F6;
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --active-status-bg: #D9F99D;
+  --active-status-text: #4D7C0F;
+  --border-color: #334155;
+}
+
 .App {
   display: flex;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
 }
 
 .main-content {
-  padding: 20px;
-  width: 100%;
-  transition: margin-left 0.3s ease-in-out;
+  flex-grow: 1;
+  padding: 2rem 3rem;
+  margin-left: 280px; /* Sidebar width */
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-toggle {
-    display: none; /* Hidden by default on desktop where sidebar is part of layout */
+  display: none;
 }
 
-/* Mobile-first: styles for small screens */
-@media (max-width: 768px) {
-    .App {
-        flex-direction: column;
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
-
-    .sidebar-toggle {
-        display: block;
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 999;
-        background: #04003B;
-        color: white;
-        border: 1px solid white;
-        border-radius: 5px;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
+/* General styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
 }
 
-/* Desktop styles */
-@media (min-width: 769px) {
-    .sidebar {
-        transform: translateX(0); /* Sidebar is always visible on desktop */
-    }
+.card {
+  background-color: var(--card-bg);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
 
-    .main-content {
-        margin-left: 270px; /* sidebar width + padding */
-    }
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-    .sidebar-toggle, .sidebar-close-btn {
-        display: none; /* Hide mobile-only controls on desktop */
-    }
+.btn-primary {
+  background-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.status-active {
+    background-color: var(--active-status-bg);
+    color: var(--active-status-text);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.loading-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
 }
