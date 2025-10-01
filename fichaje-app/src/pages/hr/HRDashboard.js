@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import SummaryCard from '../../components/hr/SummaryCard';
-import { FiBell, FiArrowRight } from 'react-icons/fi';
 import './HRDashboard.css';
 
 const HRDashboard = () => {
@@ -26,7 +26,6 @@ const HRDashboard = () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Fetch employees and their last time entry for today
             const { data: employeesData, error: employeesError } = await supabase
                 .from('employees')
                 .select(`
@@ -44,7 +43,6 @@ const HRDashboard = () => {
                 console.error("Error fetching employees:", employeesError);
             }
 
-            // Calculate stats
             let activeEmployees = 0;
             let pausedEmployees = 0;
             const processedEmployees = employeesData ? employeesData.map(emp => {
@@ -74,10 +72,10 @@ const HRDashboard = () => {
     }, [companyId]);
 
     const summaryStats = [
-        { title: 'Estado Empleados', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#DCEF2B' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#E02F2F' }] },
-        { title: 'Solicitudes Pendientes', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: '#E02F2F' }] },
-        { title: 'Ausencias Pendientes', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar', color: '#E02F2F' }] },
-        { title: 'Incidencias Detectadas', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: '#E02F2F' }] }
+        { title: 'Estado Empleados', to: '/hr/employees', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#DCEF2B' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#E02F2F' }] },
+        { title: 'Solicitudes Pendientes', to: '/hr/requests-admin', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: '#E02F2F' }] },
+        { title: 'Ausencias Pendientes', to: '/hr/absences', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar', color: '#E02F2F' }] },
+        { title: 'Incidencias Detectadas', to: '/hr/incidents', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: '#E02F2F' }] }
     ];
 
     return (
@@ -87,15 +85,13 @@ const HRDashboard = () => {
                     <h1>Escritorio de Fichajes</h1>
                     <p>Un resumen del estado actual de los empleados y las solicitudes.</p>
                 </div>
-                <div className="header-actions">
-                    <button><FiBell /></button>
-                    <button><FiArrowRight /></button>
-                </div>
             </header>
 
             <div className="summary-grid">
                 {summaryStats.map((item, index) => (
-                    <SummaryCard key={index} title={item.title} stats={item.stats} />
+                    <Link to={item.to} key={index} className="summary-card-link">
+                        <SummaryCard title={item.title} stats={item.stats} />
+                    </Link>
                 ))}
             </div>
 

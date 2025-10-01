@@ -29,7 +29,7 @@ const Sidebar = () => {
         { to: "/hr/calendar", icon: <FiCalendar />, text: "CALENDARIO" },
         { to: "/hr/departments", icon: <FiBriefcase />, text: "DEPARTAMENTOS" },
         { to: "/hr/absences", icon: <FiClock />, text: "AUSENCIAS" },
-        { to: "/hr/absence-types", icon: <FiSettings />, text: "TIPOS DE" },
+        { to: "/hr/absence-types", icon: <FiSettings />, text: "TIPOS DE AUSENCIA" },
         { to: "/hr/reports", icon: <FiBarChart2 />, text: "INFORMES" },
         { to: "/hr/requests-admin", icon: <FiInbox />, text: "SOLICITUDES" },
         { to: "/hr/annual-balances", icon: <FiDollarSign />, text: "SALDOS" },

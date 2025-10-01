@@ -118,3 +118,8 @@ tbody tr:last-child {
 .action-link:hover {
   text-decoration: underline;
 }
+
+.summary-card-link {
+  text-decoration: none;
+  color: inherit;
+}
