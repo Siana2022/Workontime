@@ -10,7 +10,7 @@ import {
 
 const Sidebar = () => {
     const { logout, user } = useAuth();
-    const logoUrl = "https://i.postimg.cc/D28NhLc6/WORKONTIME-20.png";
+    const logoUrl = "https://i.postimg.cc/DftTtwDx/WORKONTIME-21-1.png";
 
     const handleLogout = () => {
         if (logout) {

@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import SummaryCard from '../../components/hr/SummaryCard';
+import { FiBell, FiLogOut } from 'react-icons/fi';
 import './HRDashboard.css';
 
 const HRDashboard = () => {
-    const { companyId } = useAuth();
+    const { companyId, logout } = useAuth();
     const [loading, setLoading] = useState(true);
     const [employees, setEmployees] = useState([]);
     const [stats, setStats] = useState({
@@ -84,6 +85,10 @@ const HRDashboard = () => {
                 <div>
                     <h1>Escritorio de Fichajes</h1>
                     <p>Un resumen del estado actual de los empleados y las solicitudes.</p>
+                </div>
+                <div className="header-actions">
+                    <button><FiBell /></button>
+                    <button onClick={logout}><FiLogOut /></button>
                 </div>
             </header>
 
