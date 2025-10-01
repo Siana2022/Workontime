@@ -85,3 +85,9 @@ p {
     font-size: 1.5rem;
     color: var(--text-primary);
 }
+
+/* Ensure all table text is dark and readable */
+.main-content table th,
+.main-content table td {
+    color: var(--text-primary) !important; /* Use important to override any specific component styles */
+}
