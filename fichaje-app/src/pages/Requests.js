@@ -10,6 +10,9 @@ const Requests = () => {
     const [endDate, setEndDate] = useState('');
     const [comments, setComments] = useState('');
     const [attachment, setAttachment] = useState(null);
+    const [dayType, setDayType] = useState('Día Completo');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
 
     // New state for clock-in error fields
     const [errorDate, setErrorDate] = useState('');
@@ -40,6 +43,13 @@ const Requests = () => {
     useEffect(() => {
         fetchRequests();
     }, [user.id]);
+
+    // Reset dayType when requestType changes to something that doesn't need it
+    useEffect(() => {
+        if (requestType !== 'Vacaciones' && requestType !== 'Baja Médica') {
+            setDayType('Día Completo');
+        }
+    }, [requestType]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -104,6 +114,14 @@ const Requests = () => {
             newRequest.end_date = endDate;
         }
 
+        if (requestType === 'Vacaciones' || requestType === 'Baja Médica') {
+            newRequest.day_type = dayType;
+            if (dayType === 'Por Horas') {
+                newRequest.start_time = startTime;
+                newRequest.end_time = endTime;
+            }
+        }
+
         const { error: insertError } = await supabase.from('requests').insert([newRequest]);
 
         if (insertError) {
@@ -111,11 +129,15 @@ const Requests = () => {
             console.error('Error inserting request:', insertError);
         } else {
             setSuccess('¡Solicitud enviada con éxito!');
+            // Reset form fields
             setRequestType('');
             setStartDate('');
             setEndDate('');
             setComments('');
             setAttachment(null);
+            setDayType('Día Completo');
+            setStartTime('');
+            setEndTime('');
             setErrorDate('');
             setActualTime('');
             setClockedTime('');
@@ -143,8 +165,19 @@ const Requests = () => {
                             <option>Baja Médica</option>
                             <option>Error en el fichaje</option>
                             <option>Solicitud cambio de horario</option>
+                            <option>Otros</option>
                         </select>
                     </div>
+
+                    {(requestType === 'Vacaciones' || requestType === 'Baja Médica') && (
+                        <div className="form-group">
+                            <label>Modalidad</label>
+                            <select value={dayType} onChange={(e) => setDayType(e.target.value)} disabled={loading}>
+                                <option>Día Completo</option>
+                                <option>Por Horas</option>
+                            </select>
+                        </div>
+                    )}
 
                     {requestType === 'Baja Médica' && (
                         <div className="form-group">
@@ -153,7 +186,33 @@ const Requests = () => {
                         </div>
                     )}
 
-                    {requestType === 'Error en el fichaje' ? (
+                    {requestType !== 'Error en el fichaje' && (
+                        <>
+                            <div className="form-group">
+                                <label htmlFor="start-date">Fecha de Inicio</label>
+                                <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={loading} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="end-date">Fecha de Fin</label>
+                                <input type="date" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={loading} />
+                            </div>
+                        </>
+                    )}
+
+                    {dayType === 'Por Horas' && (requestType === 'Vacaciones' || requestType === 'Baja Médica') && (
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label htmlFor="start-time">Hora de Inicio</label>
+                                <input type="time" id="start-time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required={dayType === 'Por Horas'} disabled={loading} />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="end-time">Hora de Fin</label>
+                                <input type="time" id="end-time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required={dayType === 'Por Horas'} disabled={loading} />
+                            </div>
+                        </div>
+                    )}
+
+                    {requestType === 'Error en el fichaje' && (
                         <>
                             <div className="form-group">
                                 <label htmlFor="error-date">Fecha del Error</label>
@@ -166,17 +225,6 @@ const Requests = () => {
                             <div className="form-group">
                                 <label htmlFor="clocked-time">Hora de Entrada Fichada</label>
                                 <input type="time" id="clocked-time" value={clockedTime} onChange={(e) => setClockedTime(e.target.value)} required disabled={loading} />
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="form-group">
-                                <label htmlFor="start-date">Fecha de Inicio</label>
-                                <input type="date" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required disabled={loading} />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="end-date">Fecha de Fin</label>
-                                <input type="date" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={loading} />
                             </div>
                         </>
                     )}

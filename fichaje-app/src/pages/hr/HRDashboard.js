@@ -31,7 +31,7 @@ const HRDashboard = () => {
                 .from('employees')
                 .select(`
                     id,
-                    name,
+                    full_name,
                     time_entries (
                         action,
                         created_at
@@ -108,7 +108,7 @@ const HRDashboard = () => {
                         {loading ? (<tr><td colSpan="5">Cargando...</td></tr>) :
                             employees.map(emp => (
                                 <tr key={emp.id}>
-                                    <td>{emp.name}</td>
+                                    <td>{emp.full_name}</td>
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
                                     <td>{emp.currentTask}</td>
