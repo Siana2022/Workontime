@@ -69,5 +69,5 @@
 .modal-content p,
 .modal-content th,
 .modal-content td {
-    color: #fff;
+    color: #fff !important;
 }
