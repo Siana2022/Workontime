@@ -6,10 +6,13 @@ import SummaryCard from '../../components/hr/SummaryCard';
 import { FiBell, FiLogOut } from 'react-icons/fi';
 import './HRDashboard.css';
 
+import EmployeeHistoryModal from '../../components/hr/EmployeeHistoryModal';
+
 const HRDashboard = () => {
     const { companyId, logout } = useAuth();
     const [loading, setLoading] = useState(true);
     const [employees, setEmployees] = useState([]);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
     const [stats, setStats] = useState({
         activeEmployees: 0,
         pausedEmployees: 0,
@@ -86,16 +89,29 @@ const HRDashboard = () => {
         fetchDashboardData();
     }, [companyId]);
 
+    const handleViewHistory = (employeeId) => {
+        setSelectedEmployeeId(employeeId);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedEmployeeId(null);
+    };
+
     const summaryStats = [
-        { title: 'Estado Empleados', to: '/hr/employees', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#DCEF2B' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#E02F2F' }] },
-        { title: 'Solicitudes Pendientes', to: '/hr/requests-admin', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: '#E02F2F' }] },
-        { title: 'Ausencias Pendientes', to: '/hr/absences', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar', color: '#E02F2F' }] },
-        { title: 'Incidencias Detectadas', to: '/hr/incidents', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: '#E02F2F' }] }
+        { title: 'Estado Empleados', to: '/hr/employees', stats: [{ value: stats.activeEmployees, label: 'Activos', color: 'var(--status-green)' }, { value: stats.pausedEmployees, label: 'Pausa', color: 'var(--status-red)' }] },
+        { title: 'Solicitudes Pendientes', to: '/hr/requests-admin', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: 'var(--text-primary)' }] },
+        { title: 'Ausencias Pendientes', to: '/hr/absences', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar', color: 'var(--text-primary)' }] },
+        { title: 'Incidencias Detectadas', to: '/hr/incidents', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: 'var(--status-red)' }] }
     ];
 
     return (
         <div className="hr-dashboard">
-            {/* The header is now in App.js */}
+            {selectedEmployeeId && (
+                <EmployeeHistoryModal
+                    employeeId={selectedEmployeeId}
+                    onClose={handleCloseModal}
+                />
+            )}
             <div className="summary-grid">
                 {summaryStats.map((item, index) => (
                     <Link to={item.to} key={index} className="summary-card-link">
@@ -122,7 +138,11 @@ const HRDashboard = () => {
                                     <td>{emp.full_name}</td>
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
-                                    <td><a href="#" className="action-link">Ver Historial</a></td>
+                                    <td>
+                                        <button onClick={() => handleViewHistory(emp.id)} className="action-link-danger">
+                                            Ver Historial
+                                        </button>
+                                    </td>
                                 </tr>
                             ))
                         }
