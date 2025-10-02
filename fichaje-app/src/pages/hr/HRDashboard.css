@@ -77,13 +77,21 @@ tbody tr:last-child {
 }
 
 .action-link {
-  color: #EF4444;
-  text-decoration: none;
-  font-weight: bold;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
 }
 
 .action-link:hover {
-  text-decoration: underline;
+    background-color: #45a049; /* Darker green */
+    text-decoration: none;
 }
 
 .summary-card-link {

@@ -5,4 +5,4 @@ npm error errno -2
 npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/app/fichaje-app/fichaje-app/fichaje-app/package.json'
 npm error enoent This is related to npm not being able to find a file.
 npm error enoent
-npm error A complete log of this run can be found in: /home/jules/.npm/_logs/2025-10-02T14_03_39_199Z-debug-0.log
+npm error A complete log of this run can be found in: /home/jules/.npm/_logs/2025-10-02T14_09_13_897Z-debug-0.log
