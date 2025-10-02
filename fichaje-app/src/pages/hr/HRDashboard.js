@@ -44,8 +44,8 @@ const HRDashboard = () => {
                 console.error("Error fetching employees:", employeesError);
             }
 
-            const totalEmployees = employeesData ? employeesData.length : 0;
             let activeCount = 0;
+            let pausedCount = 0;
 
             const allEmployeesWithStatus = employeesData ? employeesData.map(emp => {
                 const todaysEntries = emp.time_entries
@@ -67,15 +67,15 @@ const HRDashboard = () => {
 
                 if (status === 'Activo') {
                     activeCount++;
+                } else { // Employees who are 'Pausa' or 'Fuera' are counted as not working
+                    pausedCount++;
                 }
 
                 return { ...emp, status, entryTime };
             }) : [];
 
-            const pausedCount = totalEmployees - activeCount;
-
             const workingEmployees = allEmployeesWithStatus.filter(
-                emp => emp.status === 'Activo' || emp.status === 'Pausa'
+                emp => emp.status === 'Activo'
             );
 
             setEmployees(workingEmployees);
