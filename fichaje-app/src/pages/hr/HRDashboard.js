@@ -38,14 +38,15 @@ const HRDashboard = () => {
                     )
                 `)
                 .eq('company_id', companyId)
+                .eq('role', 'Empleado')
                 .order('created_at', { foreignTable: 'time_entries', ascending: false });
 
             if (employeesError) {
                 console.error("Error fetching employees:", employeesError);
             }
 
+            const totalEmployees = employeesData ? employeesData.length : 0;
             let activeCount = 0;
-            let pausedCount = 0;
 
             const allEmployeesWithStatus = employeesData ? employeesData.map(emp => {
                 const todaysEntries = emp.time_entries
@@ -64,20 +65,19 @@ const HRDashboard = () => {
                     }
                     entryTime = new Date(lastEntry.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
                 }
+
+                if (status === 'Activo') {
+                    activeCount++;
+                }
+
                 return { ...emp, status, entryTime };
             }) : [];
 
-            const workingEmployees = allEmployeesWithStatus.filter(emp => {
-                if (emp.status === 'Activo') {
-                    activeCount++;
-                    return true;
-                }
-                if (emp.status === 'Pausa') {
-                    pausedCount++;
-                    return true;
-                }
-                return false;
-            });
+            const pausedCount = totalEmployees - activeCount;
+
+            const workingEmployees = allEmployeesWithStatus.filter(
+                emp => emp.status === 'Activo' || emp.status === 'Pausa'
+            );
 
             setEmployees(workingEmployees);
             setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: pausedCount }));
