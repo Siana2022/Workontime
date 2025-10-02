@@ -64,3 +64,10 @@
 .history-table-container tbody tr:last-child td {
     border-bottom: none;
 }
+
+/* Ensure all text inside the modal is white */
+.modal-content p,
+.modal-content th,
+.modal-content td {
+    color: #fff;
+}
