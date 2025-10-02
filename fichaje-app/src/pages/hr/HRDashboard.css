@@ -1,5 +1,6 @@
 .hr-dashboard {
   color: var(--text-primary);
+  padding-top: 50px; /* Add space for the floating global actions */
 }
 
 .summary-grid {

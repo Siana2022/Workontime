@@ -90,7 +90,7 @@ const HRIncidents = () => {
                                 <td>{incident.date}</td>
                                 <td><span className={`status status-${incident.status.toLowerCase().replace(/\s+/g, '-')}`}>{incident.status}</span></td>
                                 <td>
-                                    <Link to={`/hr/incidents/${incident.id}`} className="action-btn edit-btn">Ver/Editar</Link>
+                                    <Link to={`/hr/incidents/${incident.id}`} className="action-btn edit-btn">Ver</Link>
                                 </td>
                             </tr>
                         )) : (

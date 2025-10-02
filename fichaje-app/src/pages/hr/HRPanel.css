@@ -1,6 +1,7 @@
 /* Shared container styles for HR Panel pages */
 .hr-panel-container {
     padding: 20px;
+    padding-top: 50px; /* Add space for the floating global actions */
 }
 
 /* Shared header styles */
