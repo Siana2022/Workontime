@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import SummaryCard from '../../components/hr/SummaryCard';
+import EmployeeHistoryModal from '../../components/hr/EmployeeHistoryModal';
 import { FiBell, FiLogOut } from 'react-icons/fi';
 import './HRDashboard.css';
 
@@ -10,6 +11,7 @@ const HRDashboard = () => {
     const { companyId, logout } = useAuth();
     const [loading, setLoading] = useState(true);
     const [employees, setEmployees] = useState([]);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
     const [stats, setStats] = useState({
         activeEmployees: 0,
         pausedEmployees: 0,
@@ -87,6 +89,14 @@ const HRDashboard = () => {
         fetchDashboardData();
     }, [companyId]);
 
+    const handleViewHistory = (employeeId) => {
+        setSelectedEmployeeId(employeeId);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedEmployeeId(null);
+    };
+
     const summaryStats = [
         { title: 'Estado Empleados', to: '/hr/employees', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#DCEF2B' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#E02F2F' }] },
         { title: 'Solicitudes Pendientes', to: '/hr/requests-admin', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: '#E02F2F' }] },
@@ -96,7 +106,12 @@ const HRDashboard = () => {
 
     return (
         <div className="hr-dashboard">
-            {/* The header is now in App.js */}
+            {selectedEmployeeId && (
+                <EmployeeHistoryModal
+                    employeeId={selectedEmployeeId}
+                    onClose={handleCloseModal}
+                />
+            )}
             <div className="summary-grid">
                 {summaryStats.map((item, index) => (
                     <Link to={item.to} key={index} className="summary-card-link">
@@ -123,7 +138,11 @@ const HRDashboard = () => {
                                     <td>{emp.full_name}</td>
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
-                                    <td><a href="#" className="action-link">Ver Historial</a></td>
+                                    <td>
+                                        <button onClick={() => handleViewHistory(emp.id)} className="action-link">
+                                            Ver Historial
+                                        </button>
+                                    </td>
                                 </tr>
                             ))
                         }
