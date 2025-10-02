@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
+import { FiBell, FiLogOut } from 'react-icons/fi';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Kiosk from './pages/Kiosk';
@@ -28,7 +29,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import './App.css';
 
 const AppLayout = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     if (!user) {
         return <div className="loading-container">Verificando usuario...</div>;
     }
@@ -36,6 +37,21 @@ const AppLayout = () => {
         <div className="App">
             <Sidebar />
             <main className="main-content">
+                <header className="dashboard-header">
+                    {/* This title is now static, we can improve it later if needed */}
+                    <div>
+                        <h1>Escritorio</h1>
+                        <p>Bienvenido, {user.name || 'Usuario'}.</p>
+                    </div>
+                    <div className="header-actions">
+                        <Link to="/hr/incidents" className="header-action-link">
+                            <FiBell />
+                        </Link>
+                        <button onClick={logout} className="header-action-button">
+                            <FiLogOut />
+                        </button>
+                    </div>
+                </header>
                 <Outlet />
             </main>
         </div>

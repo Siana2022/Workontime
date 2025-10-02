@@ -91,3 +91,52 @@ p {
 .main-content table td {
     color: var(--text-primary) !important; /* Use important to override any specific component styles */
 }
+
+/* Global Header Styles */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.header-actions .header-action-link,
+.header-actions .header-action-button {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s;
+  text-decoration: none; /* For the link */
+}
+.header-actions .header-action-link:hover,
+.header-actions .header-action-button:hover {
+    background-color: var(--primary-bg);
+}

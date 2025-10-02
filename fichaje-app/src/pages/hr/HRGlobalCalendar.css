@@ -1,3 +1,28 @@
+.calendar-legend {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.legend-item::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.legend-vacation::before {
+    background-color: #28a745; /* Green */
+}
+
+.legend-holiday::before {
+    background-color: #007bff; /* Blue */
+}
+
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -38,6 +63,7 @@
     padding: 10px 5px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    color: #000; /* Black text for readability */
 }
 
 .calendar-day {
@@ -76,16 +102,64 @@
     color: white;
 }
 
-.event-aprobada {
+.event-vacation {
     background-color: #28a745; /* Green */
 }
 
-.event-pendiente {
-    background-color: #ffc107; /* Yellow */
-    color: #333;
+.event-holiday {
+    background-color: #007bff; /* Blue */
+    cursor: pointer;
 }
 
-.event-holiday {
-    background-color: #6f42c1; /* Purple */
+.calendar-day.holiday {
+    background-color: #e7f3ff; /* Light blue background */
+}
+
+.calendar-day.holiday .day-number {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Styles for HRHolidays page layout and list */
+.holidays-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.holidays-list h3 {
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.holidays-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.holidays-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff; /* Blue accent */
+    font-weight: 500;
+}
+
+.holidays-list li div button {
+    background: none;
+    border: none;
     cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 5px;
+    color: var(--text-secondary);
+}
+.holidays-list li div button:hover {
+    color: var(--text-primary);
 }

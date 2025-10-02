@@ -81,21 +81,7 @@ const HRDashboard = () => {
 
     return (
         <div className="hr-dashboard">
-            <header className="dashboard-header">
-                <div>
-                    <h1>Escritorio de Fichajes</h1>
-                    <p>Un resumen del estado actual de los empleados y las solicitudes.</p>
-                </div>
-                <div className="header-actions">
-                    <Link to="/hr/incidents" className="header-action-link">
-                        <FiBell />
-                    </Link>
-                    <button onClick={logout} className="header-action-button">
-                        <FiLogOut />
-                    </button>
-                </div>
-            </header>
-
+            {/* The header is now in App.js */}
             <div className="summary-grid">
                 {summaryStats.map((item, index) => (
                     <Link to={item.to} key={index} className="summary-card-link">

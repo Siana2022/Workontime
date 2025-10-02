@@ -95,6 +95,14 @@
     background-color: #dc3545;
 }
 
+.status-abierta {
+    background-color: #dc3545; /* Red */
+}
+
+.status-cerrada {
+    background-color: #28a745; /* Green */
+}
+
 /* Form Overlay and Modal Styles */
 .form-overlay {
     position: fixed;
