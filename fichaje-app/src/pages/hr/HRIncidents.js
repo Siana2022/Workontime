@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import './HRPanel.css';
@@ -89,7 +90,7 @@ const HRIncidents = () => {
                                 <td>{incident.date}</td>
                                 <td><span className={`status status-${incident.status.toLowerCase().replace(/\s+/g, '-')}`}>{incident.status}</span></td>
                                 <td>
-                                    <button className="action-btn edit-btn" disabled>Ver/Editar</button>
+                                    <Link to={`/hr/incidents/${incident.id}`} className="action-btn edit-btn">Ver/Editar</Link>
                                 </td>
                             </tr>
                         )) : (

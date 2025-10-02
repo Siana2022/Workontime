@@ -5,6 +5,11 @@
     margin-bottom: 10px;
 }
 
+.legend-item {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
 .legend-item::before {
     content: '';
     display: inline-block;

@@ -15,6 +15,7 @@ import HRAbsenceTypes from './pages/hr/HRAbsenceTypes';
 import HRIncidentTypes from './pages/hr/HRIncidentTypes';
 import HRAbsences from './pages/hr/HRAbsences';
 import HRIncidents from './pages/hr/HRIncidents';
+import HRIncidentDetail from './pages/hr/HRIncidentDetail';
 import HRGlobalCalendar from './pages/hr/HRGlobalCalendar';
 import HRHolidays from './pages/hr/HRHolidays';
 import HRScheduleTypes from './pages/hr/HRScheduleTypes';
@@ -37,21 +38,14 @@ const AppLayout = () => {
         <div className="App">
             <Sidebar />
             <main className="main-content">
-                <header className="dashboard-header">
-                    {/* This title is now static, we can improve it later if needed */}
-                    <div>
-                        <h1>Escritorio</h1>
-                        <p>Bienvenido, {user.name || 'Usuario'}.</p>
-                    </div>
-                    <div className="header-actions">
-                        <Link to="/hr/incidents" className="header-action-link">
-                            <FiBell />
-                        </Link>
-                        <button onClick={logout} className="header-action-button">
-                            <FiLogOut />
-                        </button>
-                    </div>
-                </header>
+                <div className="global-actions">
+                    <Link to="/hr/incidents" className="header-action-link">
+                        <FiBell />
+                    </Link>
+                    <button onClick={logout} className="header-action-button">
+                        <FiLogOut />
+                    </button>
+                </div>
                 <Outlet />
             </main>
         </div>
@@ -92,6 +86,7 @@ const AppRoutes = () => {
                         <Route path="absences" element={<HRAbsences />} />
                         <Route path="absence-types" element={<HRAbsenceTypes />} />
                         <Route path="incidents" element={<HRIncidents />} />
+                        <Route path="incidents/:incidentId" element={<HRIncidentDetail />} />
                         <Route path="incident-types" element={<HRIncidentTypes />} />
                         <Route path="calendar" element={<HRGlobalCalendar />} />
                         <Route path="holidays" element={<HRHolidays />} />
