@@ -139,7 +139,7 @@ const HRDashboard = () => {
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
                                     <td>
-                                        <button onClick={() => handleViewHistory(emp.id)} className="action-link">
+                                        <button onClick={() => handleViewHistory(emp.id)} className="btn btn-success">
                                             Ver Historial
                                         </button>
                                     </td>

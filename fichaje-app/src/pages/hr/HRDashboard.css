@@ -76,23 +76,6 @@ tbody tr:last-child {
     color: #374151;
 }
 
-.action-link {
-    background-color: #4CAF50; /* Green */
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: bold;
-    text-align: center;
-    display: inline-block;
-}
-
-.action-link:hover {
-    background-color: #45a049; /* Darker green */
-    text-decoration: none;
-}
 
 .summary-card-link {
   text-decoration: none;

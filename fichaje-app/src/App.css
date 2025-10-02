@@ -68,6 +68,15 @@ p {
   color: #FFFFFF;
 }
 
+.btn-success {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #45a049; /* Darker green */
+}
+
 .status-activo {
     background-color: var(--active-status-bg);
     color: var(--active-status-text);
