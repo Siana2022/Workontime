@@ -237,7 +237,7 @@ const HREmployees = () => {
                 avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
             }
 
-            const { id, name, last_name, assigned_clients, ...formData } = employeeData;
+            const { id, name, last_name, assigned_clients, department, schedule, ...formData } = employeeData;
             const record = {
                 ...formData,
                 full_name: `${name} ${last_name}`.trim(),
