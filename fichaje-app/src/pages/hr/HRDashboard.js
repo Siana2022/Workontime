@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import SummaryCard from '../../components/hr/SummaryCard';
-import EmployeeHistoryModal from '../../components/hr/EmployeeHistoryModal';
 import { FiBell, FiLogOut } from 'react-icons/fi';
 import './HRDashboard.css';
+
+import EmployeeHistoryModal from '../../components/hr/EmployeeHistoryModal';
 
 const HRDashboard = () => {
     const { companyId, logout } = useAuth();
@@ -40,15 +41,14 @@ const HRDashboard = () => {
                     )
                 `)
                 .eq('company_id', companyId)
-                .eq('role', 'Empleado')
                 .order('created_at', { foreignTable: 'time_entries', ascending: false });
 
             if (employeesError) {
                 console.error("Error fetching employees:", employeesError);
             }
 
-            const totalEmployees = employeesData ? employeesData.length : 0;
             let activeCount = 0;
+            let pausedCount = 0;
 
             const allEmployeesWithStatus = employeesData ? employeesData.map(emp => {
                 const todaysEntries = emp.time_entries
@@ -67,19 +67,20 @@ const HRDashboard = () => {
                     }
                     entryTime = new Date(lastEntry.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
                 }
-
-                if (status === 'Activo') {
-                    activeCount++;
-                }
-
                 return { ...emp, status, entryTime };
             }) : [];
 
-            const pausedCount = totalEmployees - activeCount;
-
-            const workingEmployees = allEmployeesWithStatus.filter(
-                emp => emp.status === 'Activo' || emp.status === 'Pausa'
-            );
+            const workingEmployees = allEmployeesWithStatus.filter(emp => {
+                if (emp.status === 'Activo') {
+                    activeCount++;
+                    return true;
+                }
+                if (emp.status === 'Pausa') {
+                    pausedCount++;
+                    return true;
+                }
+                return false;
+            });
 
             setEmployees(workingEmployees);
             setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: pausedCount }));
@@ -101,7 +102,7 @@ const HRDashboard = () => {
         { title: 'Estado Empleados', to: '/hr/employees', stats: [{ value: stats.activeEmployees, label: 'Activos', color: '#DCEF2B' }, { value: stats.pausedEmployees, label: 'Pausa', color: '#E02F2F' }] },
         { title: 'Solicitudes Pendientes', to: '/hr/requests-admin', stats: [{ value: stats.pendingAbsences, label: 'Ausencias por revisar', color: '#E02F2F' }] },
         { title: 'Ausencias Pendientes', to: '/hr/absences', stats: [{ value: stats.pendingClockings, label: 'Fichajes por revisar', color: '#E02F2F' }] },
-        { title: 'Incidencias Detectadas', to: '/hr/incidents', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: '#E02F2F' }] }
+        { title: 'Incidencias Detectadas', to: '/hr/incidents', stats: [{ value: stats.detectedIncidents, label: 'Fichajes por revisar', color: 'var(--status-red)' }] }
     ];
 
     return (
@@ -112,6 +113,7 @@ const HRDashboard = () => {
                     onClose={handleCloseModal}
                 />
             )}
+            {/* The header is now in App.js */}
             <div className="summary-grid">
                 {summaryStats.map((item, index) => (
                     <Link to={item.to} key={index} className="summary-card-link">
@@ -139,7 +141,7 @@ const HRDashboard = () => {
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
                                     <td>
-                                        <button onClick={() => handleViewHistory(emp.id)} className="btn btn-success">
+                                        <button onClick={() => handleViewHistory(emp.id)} className="action-link-danger">
                                             Ver Historial
                                         </button>
                                     </td>
