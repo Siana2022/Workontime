@@ -130,6 +130,17 @@ const EmployeeDashboard = () => {
         }
     }, [user?.vacation_days, usedVacationDays]);
 
+    // Real-time timer for worked hours
+    useEffect(() => {
+        let interval;
+        if (clockingStatus === 'Trabajando') {
+            interval = setInterval(() => {
+                setTimeWorkedToday(prevTime => prevTime + (1 / 3600)); // Add 1 second in hours
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [clockingStatus]);
+
     const recordTimeEntry = async (actionType) => {
         setLoading(true);
         setError('');
@@ -191,8 +202,9 @@ const EmployeeDashboard = () => {
             </div>
 
             <div className="status-indicator-container">
-                <span className={`status-dot status-${clockingStatus.toLowerCase().replace(/\s+/g, '-')}`}></span>
-                Estado: <strong>{clockingStatus}</strong>
+                <span className={`status-badge status-${clockingStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {clockingStatus}
+                </span>
             </div>
 
             <div className="dashboard-section summary-stats">

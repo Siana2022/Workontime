@@ -1,14 +1,12 @@
 .dashboard-container {
     padding: 20px;
+    padding-top: 50px; /* Add space for the floating global actions */
     text-align: center;
 }
 
 .dashboard-container h1 {
-    background-color: #04003B;
-    color: #ffffff;
-    padding: 20px;
-    margin: -20px -20px 10px -20px;
-    border-radius: 8px 8px 0 0;
+    /* Removed old banner styles to match the rest of the app */
+    margin-bottom: 10px;
 }
 
 .dashboard-container h2 {
@@ -150,40 +148,29 @@
 }
 
 .status-indicator-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
     margin-bottom: 20px;
-    font-size: 1.3em;
 }
 
-.status-dot {
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background-color: #6c757d;
+.status-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: white;
 }
 
-.status-dot.status-trabajando {
-    background-color: #28a745;
-    animation: pulse 2s infinite;
+.status-badge.status-trabajando {
+    background-color: #28a745; /* Green */
 }
 
-.status-dot.status-en-pausa {
-    background-color: #ffc107;
+.status-badge.status-en-pausa {
+    background-color: #ffc107; /* Yellow */
+    color: #333;
 }
 
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
-    }
+.status-badge.status-fuera-de-servicio {
+    background-color: #dc3545; /* Red */
 }
 
 /* Mobile Responsive Styles */

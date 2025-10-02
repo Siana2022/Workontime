@@ -47,7 +47,9 @@ const HRDashboard = () => {
             let activeEmployees = 0;
             let pausedEmployees = 0;
             const processedEmployees = employeesData ? employeesData.map(emp => {
-                const todaysEntries = emp.time_entries.filter(e => new Date(e.created_at) >= today);
+                const todaysEntries = emp.time_entries
+                    .filter(e => new Date(e.created_at) >= today)
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 const lastEntry = todaysEntries[0];
                 let status = 'Fuera';
                 let entryTime = '--:--';
