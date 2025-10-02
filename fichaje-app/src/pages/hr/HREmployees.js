@@ -5,13 +5,23 @@ import './HRPanel.css';
 import './HREmployees.css';
 
 const EmployeeForm = ({ employee, schedules, departments, clients, assignedClientIds, onSave, onCancel, isSaving, settings }) => {
-    const [formData, setFormData] = useState(employee || {});
+    const [formData, setFormData] = useState({});
     const [avatarFile, setAvatarFile] = useState(null);
     const [selectedClients, setSelectedClients] = useState(new Set(assignedClientIds || []));
 
     useEffect(() => {
-        const initialData = employee || { full_name: '', pin: '', role: 'Empleado', avatar_url: '', schedule_id: null, department_id: null, vacation_days: 22 };
-        setFormData(initialData);
+        if (employee) {
+            const nameParts = employee.full_name ? employee.full_name.split(' ') : [''];
+            const name = nameParts[0] || '';
+            const last_name = nameParts.slice(1).join(' ');
+            setFormData({ ...employee, name, last_name });
+        } else {
+            setFormData({
+                name: '', last_name: '', email: '', dni: '', social_security_number: '',
+                pin: '', role: 'Empleado', avatar_url: '', schedule_id: null,
+                department_id: null, vacation_days: 22
+            });
+        }
         setSelectedClients(new Set(assignedClientIds || []));
     }, [employee, assignedClientIds]);
 
@@ -45,42 +55,60 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
         <div className="form-overlay">
             <form className="employee-form" onSubmit={handleSubmit}>
                 <h2>{employee ? 'Editar Empleado' : 'Añadir Empleado'}</h2>
-                <div className="form-group">
-                    <label htmlFor="employee-name">Nombre Completo</label>
-                    <input type="text" id="employee-name" name="full_name" value={formData.full_name || ''} onChange={handleChange} required disabled={isSaving} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-pin">PIN (4 dígitos)</label>
-                    <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required maxLength="4" disabled={isSaving || !!employee} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-role">Rol</label>
-                    <select id="employee-role" name="role" value={formData.role || 'Empleado'} onChange={handleChange} disabled={isSaving}>
-                        <option value="Empleado">Empleado</option>
-                        <option value="Gestor de RRHH">Gestor de RRHH</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-schedule">Horario Asignado</label>
-                    <select id="employee-schedule" name="schedule_id" value={formData.schedule_id || ''} onChange={handleChange} disabled={isSaving}>
-                        <option value="">Sin Horario</option>
-                        {schedules.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-department">Departamento</label>
-                    <select id="employee-department" name="department_id" value={formData.department_id || ''} onChange={handleChange} disabled={isSaving}>
-                        <option value="">Sin Departamento</option>
-                        {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-vacation">Días de Vacaciones Totales</label>
-                    <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} required disabled={isSaving} />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="employee-avatar">Avatar (Imagen)</label>
-                    <input type="file" id="employee-avatar" name="avatar" onChange={handleFileChange} accept="image/*" disabled={isSaving} />
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="employee-name">Nombre</label>
+                        <input type="text" id="employee-name" name="name" value={formData.name || ''} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-last-name">Apellidos</label>
+                        <input type="text" id="employee-last-name" name="last_name" value={formData.last_name || ''} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-email">Email</label>
+                        <input type="email" id="employee-email" name="email" value={formData.email || ''} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-dni">DNI</label>
+                        <input type="text" id="employee-dni" name="dni" value={formData.dni || ''} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-ssn">Número de la Seguridad Social</label>
+                        <input type="text" id="employee-ssn" name="social_security_number" value={formData.social_security_number || ''} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-pin">PIN (4 dígitos)</label>
+                        <input type="password" id="employee-pin" name="pin" value={formData.pin || ''} onChange={handleChange} required maxLength="4" disabled={isSaving || !!employee} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-role">Rol</label>
+                        <select id="employee-role" name="role" value={formData.role || 'Empleado'} onChange={handleChange} disabled={isSaving}>
+                            <option value="Empleado">Empleado</option>
+                            <option value="Gestor de RRHH">Gestor de RRHH</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-schedule">Horario Asignado</label>
+                        <select id="employee-schedule" name="schedule_id" value={formData.schedule_id || ''} onChange={handleChange} disabled={isSaving}>
+                            <option value="">Sin Horario</option>
+                            {schedules.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-department">Departamento</label>
+                        <select id="employee-department" name="department_id" value={formData.department_id || ''} onChange={handleChange} disabled={isSaving}>
+                            <option value="">Sin Departamento</option>
+                            {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-vacation">Días de Vacaciones Totales</label>
+                        <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} required disabled={isSaving} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="employee-avatar">Avatar (Imagen)</label>
+                        <input type="file" id="employee-avatar" name="avatar" onChange={handleFileChange} accept="image/*" disabled={isSaving} />
+                    </div>
                 </div>
 
                 {settings?.has_clients_module && (
@@ -209,9 +237,10 @@ const HREmployees = () => {
                 avatarUrl = supabase.storage.from('avatars').getPublicUrl(filePath).data.publicUrl;
             }
 
-            const { id, ...formData } = employeeData;
+            const { id, name, last_name, ...formData } = employeeData;
             const record = {
                 ...formData,
+                full_name: `${name} ${last_name}`.trim(),
                 avatar_url: avatarUrl,
                 schedule_id: formData.schedule_id || null,
                 department_id: formData.department_id || null,

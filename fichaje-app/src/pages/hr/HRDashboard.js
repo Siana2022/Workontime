@@ -87,8 +87,12 @@ const HRDashboard = () => {
                     <p>Un resumen del estado actual de los empleados y las solicitudes.</p>
                 </div>
                 <div className="header-actions">
-                    <button><FiBell /></button>
-                    <button onClick={logout}><FiLogOut /></button>
+                    <Link to="/hr/incidents" className="header-action-link">
+                        <FiBell />
+                    </Link>
+                    <button onClick={logout} className="header-action-button">
+                        <FiLogOut />
+                    </button>
                 </div>
             </header>
 
