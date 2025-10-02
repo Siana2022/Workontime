@@ -54,6 +54,11 @@ const Requests = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!user) {
+            setError('Usuario no identificado. Por favor, recargue la página.');
+            return;
+        }
+
         if (requestType === 'Error en el fichaje') {
             if (!errorDate || !actualTime || !clockedTime) {
                 setError('Para un error de fichaje, todos los campos de fecha y hora son obligatorios.');
@@ -117,8 +122,8 @@ const Requests = () => {
         if (requestType === 'Vacaciones' || requestType === 'Baja Médica') {
             newRequest.day_type = dayType;
             if (dayType === 'Por Horas') {
-                newRequest.start_time = startTime;
-                newRequest.end_time = endTime;
+                newRequest.start_time = startTime || null;
+                newRequest.end_time = endTime || null;
             }
         }
 

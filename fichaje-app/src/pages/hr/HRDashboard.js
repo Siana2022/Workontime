@@ -44,30 +44,43 @@ const HRDashboard = () => {
                 console.error("Error fetching employees:", employeesError);
             }
 
-            let activeEmployees = 0;
-            let pausedEmployees = 0;
-            const processedEmployees = employeesData ? employeesData.map(emp => {
+            let activeCount = 0;
+            let pausedCount = 0;
+
+            const allEmployeesWithStatus = employeesData ? employeesData.map(emp => {
                 const todaysEntries = emp.time_entries
                     .filter(e => new Date(e.created_at) >= today)
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
                 const lastEntry = todaysEntries[0];
                 let status = 'Fuera';
                 let entryTime = '--:--';
+
                 if (lastEntry) {
                     if (lastEntry.action === 'Entrada' || lastEntry.action === 'Reanudar') {
                         status = 'Activo';
-                        activeEmployees++;
                     } else if (lastEntry.action === 'Pausa') {
                         status = 'Pausa';
-                        pausedEmployees++;
                     }
                     entryTime = new Date(lastEntry.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
                 }
-                return { ...emp, status, entryTime, currentTask: 'Ceivan Medical' }; // Mock task
+                return { ...emp, status, entryTime };
             }) : [];
 
-            setEmployees(processedEmployees);
-            setStats(prev => ({ ...prev, activeEmployees, pausedEmployees }));
+            const workingEmployees = allEmployeesWithStatus.filter(emp => {
+                if (emp.status === 'Activo') {
+                    activeCount++;
+                    return true;
+                }
+                if (emp.status === 'Pausa') {
+                    pausedCount++;
+                    return true;
+                }
+                return false;
+            });
+
+            setEmployees(workingEmployees);
+            setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: pausedCount }));
             setLoading(false);
         };
 
@@ -100,18 +113,16 @@ const HRDashboard = () => {
                             <th>EMPLEADOS</th>
                             <th>ESTADO ACTUAL</th>
                             <th>HORA DE ENTRADA</th>
-                            <th>TAREA ACTUAL</th>
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {loading ? (<tr><td colSpan="5">Cargando...</td></tr>) :
+                        {loading ? (<tr><td colSpan="4">Cargando...</td></tr>) :
                             employees.map(emp => (
                                 <tr key={emp.id}>
                                     <td>{emp.full_name}</td>
                                     <td><span className={`status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                                     <td>{emp.entryTime}</td>
-                                    <td>{emp.currentTask}</td>
                                     <td><a href="#" className="action-link">Ver Historial</a></td>
                                 </tr>
                             ))
