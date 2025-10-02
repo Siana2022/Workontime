@@ -62,7 +62,7 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-last-name">Apellidos</label>
-                        <input type="text" id="employee-last-name" name="last_name" value={formData.last_name || ''} onChange={handleChange} required disabled={isSaving} />
+                        <input type="text" id="employee-last-name" name="last_name" value={formData.last_name || ''} onChange={handleChange} disabled={isSaving} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-email">Email</label>
@@ -70,11 +70,11 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-dni">DNI</label>
-                        <input type="text" id="employee-dni" name="dni" value={formData.dni || ''} onChange={handleChange} required disabled={isSaving} />
+                        <input type="text" id="employee-dni" name="dni" value={formData.dni || ''} onChange={handleChange} disabled={isSaving} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-ssn">Número de la Seguridad Social</label>
-                        <input type="text" id="employee-ssn" name="social_security_number" value={formData.social_security_number || ''} onChange={handleChange} required disabled={isSaving} />
+                        <input type="text" id="employee-ssn" name="social_security_number" value={formData.social_security_number || ''} onChange={handleChange} disabled={isSaving} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-pin">PIN (4 dígitos)</label>
@@ -103,7 +103,7 @@ const EmployeeForm = ({ employee, schedules, departments, clients, assignedClien
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-vacation">Días de Vacaciones Totales</label>
-                        <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} required disabled={isSaving} />
+                        <input type="number" id="employee-vacation" name="vacation_days" value={formData.vacation_days || 22} onChange={handleChange} disabled={isSaving} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="employee-avatar">Avatar (Imagen)</label>
