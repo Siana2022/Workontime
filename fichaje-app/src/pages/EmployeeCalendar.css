@@ -28,6 +28,7 @@
     font-size: 1.5em;
     min-width: 200px;
     text-align: center;
+    color: #333; /* Ensure header text is dark and readable */
 }
 
 .employee-calendar-container .navigation button {
