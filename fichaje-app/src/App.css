@@ -116,7 +116,7 @@ body {
 /* --- Global Style Fixes --- */
 
 /* Ensure table text is readable by default */
-table td {
+table th, table td {
     color: var(--text-primary);
 }
 
