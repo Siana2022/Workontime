@@ -283,7 +283,11 @@ const HREmployees = () => {
             fetchData();
 
         } catch (err) {
-            setError(`Error al guardar: ${err.message}`);
+            if (err.message.includes('Bucket not found')) {
+                setError('Error de configuración: El bucket de Supabase llamado "avatars" no existe. Por favor, créelo en su panel de Supabase para poder subir imágenes.');
+            } else {
+                setError(`Error al guardar: ${err.message}`);
+            }
         } finally {
             setIsSaving(false);
         }
