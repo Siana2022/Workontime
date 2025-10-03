@@ -1,81 +1,107 @@
 :root {
-  /* Light Theme Palette */
-  --primary-bg: #F8F9FA; /* Light gray for the overall background */
-  --content-bg: #FFFFFF; /* White for the main content area and cards */
-  --text-primary: #212529; /* Dark gray for primary text */
-  --text-secondary: #6C757D; /* Medium gray for secondary text */
-  --border-color: #DEE2E6; /* Light gray for borders */
+    /* Figma-based Palette */
+    --primary-dark-blue: #0D1B3F;
+    --secondary-gray: #F4F7FC;
+    --content-bg: #FFFFFF;
+    --text-primary: #0D1B3F;
+    --text-secondary: #6C757D;
+    --accent-yellow: #F3CA3E;
+    --status-green: #34C759;
+    --status-red: #FF3B30;
+    --border-color: #EAEAEA;
+}
 
-  /* Sidebar colors remain dark */
-  --sidebar-bg: #1E293B;
-  --sidebar-text: #94A3B8;
-  --sidebar-text-active: #FFFFFF;
-  --accent-color: #3B82F6;
-
-  /* Status-specific colors */
-  --active-status-bg: #D9F99D;
-  --active-status-text: #4D7C0F;
-  --paused-status-bg: #FEF9C3;
-  --paused-status-text: #854D0E;
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--secondary-gray);
 }
 
 .App {
-  display: flex;
-  background-color: var(--primary-bg);
+    display: flex;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100vh;
+    margin-left: 260px; /* Sidebar width, will adjust if needed */
+}
+
+.app-header {
+    background-color: var(--primary-dark-blue);
+    color: #FFFFFF;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.app-header h1 {
+    color: #FFFFFF;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.app-header p {
+    color: #EAEAEA;
+    margin: 0.25rem 0 0 0;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-action-icon {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: var(--accent-yellow);
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.header-action-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .main-content {
-  flex-grow: 1;
-  margin-left: 280px; /* Sidebar width */
-  height: 100vh;
-  overflow-y: auto;
-  padding: 2rem 10%; /* Padding as requested */
-  background-color: var(--content-bg);
-  position: relative; /* For positioning global actions */
-}
-
-.sidebar-toggle {
-  display: none;
-}
-
-/* General styles */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
-}
-
-p {
-  color: var(--text-secondary);
+    background-color: var(--secondary-gray);
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 2rem 3rem;
 }
 
 .card {
-  background-color: var(--content-bg);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: var(--content-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
 }
 
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-primary {
-  background-color: var(--accent-color);
-  color: #FFFFFF;
-}
-
-.status-activo {
-    background-color: var(--active-status-bg);
-    color: var(--active-status-text);
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: none;
+    cursor: pointer;
     font-weight: bold;
-    font-size: 0.8rem;
-    display: inline-block;
 }
 
 .loading-container {
@@ -85,41 +111,4 @@ p {
     align-items: center;
     font-size: 1.5rem;
     color: var(--text-primary);
-}
-
-/* Ensure all table text is dark and readable */
-.main-content table th,
-.main-content table td {
-    color: var(--text-primary) !important; /* Use important to override any specific component styles */
-}
-
-/* Global Action Icons */
-.global-actions {
-    position: absolute;
-    top: 2rem;
-    right: 10%; /* Aligns with the parent padding */
-    display: flex;
-    gap: 0.5rem;
-    z-index: 10;
-}
-
-.global-actions .header-action-link,
-.global-actions .header-action-button {
-  background: none;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  color: var(--text-secondary);
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s;
-  text-decoration: none; /* For the link */
-}
-.global-actions .header-action-link:hover,
-.global-actions .header-action-button:hover {
-    background-color: var(--primary-bg);
 }
