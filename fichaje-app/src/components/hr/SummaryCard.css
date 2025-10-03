@@ -1,59 +1,47 @@
 .summary-card {
-    background-color: var(--content-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    min-height: 150px;
+  padding: 1.25rem;
 }
 
 .summary-card .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .summary-card .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 .summary-card .card-options-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
 }
 
 .summary-card .card-body {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, max-content));
-    gap: 2.5rem;
-    margin-top: auto;
-    align-items: flex-end;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
 }
 
 .summary-card .stat-item {
-    text-align: left;
+  text-align: center;
 }
 
 .summary-card .stat-value {
-    font-size: 3.5rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1;
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin: 0;
 }
 
 .summary-card .stat-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
 }

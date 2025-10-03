@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
 import { FiBell, FiLogOut } from 'react-icons/fi';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
@@ -31,52 +31,23 @@ import './App.css';
 
 const AppLayout = () => {
     const { user, logout } = useAuth();
-    const location = useLocation();
-
-    const getHeaderInfo = (pathname) => {
-        if (pathname.startsWith('/hr/dashboard') || pathname === '/dashboard') {
-            return {
-                title: 'Escritorio de Fichajes',
-                subtitle: 'Un resumen del estado actual de los empleados y las solicitudes.'
-            };
-        }
-        if (pathname.startsWith('/hr/employees')) {
-            return { title: 'Empleados', subtitle: 'Gestiona los empleados de tu empresa.' };
-        }
-        if (pathname.startsWith('/hr/incidents')) {
-            return { title: 'Incidencias', subtitle: 'Revisa y gestiona las incidencias de fichajes.' };
-        }
-        return { title: 'Panel de Control', subtitle: '' };
-    };
-
-    const headerInfo = getHeaderInfo(location.pathname);
-
     if (!user) {
         return <div className="loading-container">Verificando usuario...</div>;
     }
-
     return (
         <div className="App">
             <Sidebar />
-            <div className="content-wrapper">
-                <header className="app-header">
-                    <div className="header-text">
-                        <h1>{headerInfo.title}</h1>
-                        <p>{headerInfo.subtitle}</p>
-                    </div>
-                    <div className="header-actions">
-                        <Link to="/hr/incidents" className="header-action-icon">
-                            <FiBell />
-                        </Link>
-                        <button onClick={logout} className="header-action-icon">
-                            <FiLogOut />
-                        </button>
-                    </div>
-                </header>
-                <main className="main-content">
-                    <Outlet />
-                </main>
-            </div>
+            <main className="main-content">
+                <div className="global-actions">
+                    <Link to="/hr/incidents" className="header-action-link">
+                        <FiBell />
+                    </Link>
+                    <button onClick={logout} className="header-action-button">
+                        <FiLogOut />
+                    </button>
+                </div>
+                <Outlet />
+            </main>
         </div>
     );
 };

@@ -10,6 +10,7 @@ import {
 
 const Sidebar = () => {
     const { logout, user } = useAuth();
+    const logoUrl = "https://i.postimg.cc/DftTtwDx/WORKONTIME-21-1.png";
 
     const handleLogout = () => {
         if (logout) {
@@ -61,10 +62,7 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <h1 className="sidebar-logo">
-                    WORK <br />
-                    <span>ON TIME</span>
-                </h1>
+                <img src={logoUrl} alt="Work On Time Logo" className="sidebar-logo" />
             </div>
             <nav className="sidebar-nav">
                 <ul>
