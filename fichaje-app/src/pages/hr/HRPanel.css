@@ -206,6 +206,31 @@
     padding: 2px 0;
 }
 
+/* Card style for detail pages like Incident Details */
+.card {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: #333; /* Ensure text is dark and readable */
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #111;
+}
+
+.card p {
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.card p strong {
+    color: #555;
+}
+
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
