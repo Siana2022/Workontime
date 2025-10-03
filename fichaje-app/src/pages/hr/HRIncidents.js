@@ -69,7 +69,6 @@ const HRIncidents = () => {
         <div className="hr-panel-container">
             <div className="hr-panel-header">
                 <h1>Gestión de Incidencias</h1>
-                <button className="hr-panel-add-btn" disabled>Registrar Incidencia</button>
             </div>
             <div className="table-container">
                 <table className="hr-panel-table">
