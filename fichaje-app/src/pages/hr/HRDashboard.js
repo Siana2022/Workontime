@@ -67,12 +67,13 @@ const HRDashboard = () => {
             }) : [];
 
             const activeCount = allEmployeesWithStatus.filter(emp => emp.status === 'Activo').length;
-            const pausedCount = allEmployeesWithStatus.filter(emp => emp.status === 'Pausa').length;
+            const totalEmployees = employeesData ? employeesData.length : 0;
+            const notActiveCount = totalEmployees - activeCount;
 
             const workingEmployees = allEmployeesWithStatus.filter(emp => emp.status === 'Activo' || emp.status === 'Pausa');
 
             setEmployees(workingEmployees);
-            setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: pausedCount }));
+            setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: notActiveCount }));
             setLoading(false);
         };
 
