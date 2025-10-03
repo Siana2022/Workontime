@@ -46,6 +46,9 @@ const HRDashboard = () => {
                 console.error("Error fetching employees:", employeesError);
             }
 
+            let activeCount = 0;
+            let pausedCount = 0;
+
             const allEmployeesWithStatus = employeesData ? employeesData.map(emp => {
                 const todaysEntries = emp.time_entries
                     .filter(e => new Date(e.created_at) >= today)
@@ -66,14 +69,20 @@ const HRDashboard = () => {
                 return { ...emp, status, entryTime };
             }) : [];
 
-            const activeCount = allEmployeesWithStatus.filter(emp => emp.status === 'Activo').length;
-            const totalEmployees = employeesData ? employeesData.length : 0;
-            const notActiveCount = totalEmployees - activeCount;
-
-            const workingEmployees = allEmployeesWithStatus.filter(emp => emp.status === 'Activo' || emp.status === 'Pausa');
+            const workingEmployees = allEmployeesWithStatus.filter(emp => {
+                if (emp.status === 'Activo') {
+                    activeCount++;
+                    return true;
+                }
+                if (emp.status === 'Pausa') {
+                    pausedCount++;
+                    return true;
+                }
+                return false;
+            });
 
             setEmployees(workingEmployees);
-            setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: notActiveCount }));
+            setStats(prev => ({ ...prev, activeEmployees: activeCount, pausedEmployees: pausedCount }));
             setLoading(false);
         };
 

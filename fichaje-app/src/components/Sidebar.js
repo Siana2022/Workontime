@@ -61,10 +61,7 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <h1 className="sidebar-logo">
-                    WORK <br />
-                    <span>ON TIME</span>
-                </h1>
+                <img src="https://i.postimg.cc/GtpPHhkz/WORKONTIME-21.png" alt="Work On Time Logo" className="sidebar-logo" />
             </div>
             <nav className="sidebar-nav">
                 <ul>
