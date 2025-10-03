@@ -46,6 +46,7 @@
     vertical-align: middle;
     font-size: 0.9rem;
     border: none; /* Remove all internal borders */
+    color: var(--text-primary);
 }
 
 .employee-details tbody tr {
