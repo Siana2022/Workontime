@@ -38,3 +38,7 @@
     font-weight: normal;
     margin-bottom: 0;
 }
+
+.hr-panel-header h1 {
+    color: #000000;
+}
